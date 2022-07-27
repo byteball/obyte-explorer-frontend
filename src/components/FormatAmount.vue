@@ -40,7 +40,6 @@ function updValue() {
     props.rates || {}
   );
 
-  console.error(v.value.value, view.value);
   formattedValue.value = format(v.value.value);
 }
 

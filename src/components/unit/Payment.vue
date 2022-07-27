@@ -46,7 +46,7 @@ defineProps([
           :rates="rates"
           :decimals="assetDecimals"
         />
-        <span>&nbsp;from&nbsp;</span>
+        <span class="inline-block">&nbsp;from&nbsp;</span>
         <Link :type="'unit'" :link="input.to_obj.unit">{{ input.to_obj.unit }}</Link>
       </div>
       <div
@@ -61,7 +61,9 @@ defineProps([
           :rates="rates"
           :decimals="assetDecimals"
         />
-        <span>&nbsp;of {{ input.obj_commissions.obj_name }} commissions on&nbsp;</span>
+        <span class="inline-block"
+          >&nbsp;of {{ input.obj_commissions.obj_name }} commissions on&nbsp;</span
+        >
         <Link :type="'address'" :link="input.obj_commissions.address">{{
           input.obj_commissions.address
         }}</Link>
@@ -80,7 +82,7 @@ defineProps([
           :rates="rates"
           :decimals="assetDecimals"
         />
-        <span>&nbsp;to&nbsp;</span>
+        <span class="inline-block">&nbsp;to&nbsp;</span>
         <Link :type="'address'" :link="output.address">{{ output.address }}</Link>
       </div>
       <div v-if="output.is_spent">
