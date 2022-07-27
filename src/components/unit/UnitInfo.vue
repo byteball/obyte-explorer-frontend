@@ -14,11 +14,8 @@ import Messages from "./Messages.vue";
 import { useInfoStore } from "../../stores/info";
 import { useRatesStore } from "../../stores/rates";
 
-const infoStore = useInfoStore();
-const { info, isReady } = storeToRefs(infoStore);
-
-const ratesStore = useRatesStore();
-const { rates } = storeToRefs(ratesStore);
+const { info, isReady } = storeToRefs(useInfoStore());
+const { rates } = storeToRefs(useRatesStore());
 </script>
 
 <template>

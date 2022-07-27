@@ -6,8 +6,6 @@ import Collapse from "../../components/elements/Collapse.vue";
 import Link from "../../components/elements/Link.vue";
 import FormatAmount from "../../components/FormatAmount.vue";
 
-import { vDebugDirective } from "../../debug/debugDirective";
-
 const props = defineProps([
   "holders",
   "name",

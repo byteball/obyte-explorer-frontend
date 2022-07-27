@@ -5,12 +5,13 @@ import { useRouter } from "vue-router";
 
 import AutoComplete from "@tarekraafat/autocomplete.js";
 import IconDiscord from "../icons/IconDiscord.vue";
-
 import IconTwitter from "../icons/IconTwitter.vue";
+
 import { useGlobalStateStore } from "../../stores/globalState";
 import { useAssetNamesStore } from "../../stores/assetNames";
 
 const router = useRouter();
+
 const globalState = useGlobalStateStore();
 const { assetNames } = storeToRefs(useAssetNamesStore());
 

@@ -6,23 +6,20 @@ import { useWindowScroll, useElementSize, useWindowSize } from "@vueuse/core";
 import { safePrettifyJson } from "../../helpers/text";
 import { getAssetName } from "../../helpers/asset";
 import { prepareParamsForAddress } from "../../helpers/address";
+import { EventNames } from "../../enum/eventEnums";
 
 import Collapse from "../elements/Collapse.vue";
 import Payload from "../elements/Payload.vue";
 import AddLinksToAddresses from "../elements/AddLinksToAddresses.vue";
 import Link from "../elements/Link.vue";
-import FormatAmount from "../FormatAmount.vue";
 import PaymentList from "../transactions/PaymentList.vue";
+import AAResponses from "../transactions/AAResponses.vue";
+import FormatAmount from "../FormatAmount.vue";
 import UnspentOutputs from "./UnspentOutputs.vue";
 import StateVars from "./StateVars.vue";
 
-import { EventNames } from "../../enum/eventEnums";
-
 import { useGlobalStateStore } from "../../stores/globalState";
-import AAResponses from "../transactions/AAResponses.vue";
-
-const globalState = useGlobalStateStore();
-const { lastUnit, view } = storeToRefs(globalState);
+const { lastUnit, view } = storeToRefs(useGlobalStateStore());
 
 const router = useRouter();
 const route = useRoute();
@@ -40,8 +37,8 @@ const isNewPageLoaded = ref(true);
 const nextPagesEnded = ref(false);
 const filter = ref("all");
 const PL = ref(null);
-
 const el = ref(null);
+
 const { height: wHeigth } = useWindowSize();
 const { height } = useElementSize(el);
 const { y } = useWindowScroll();

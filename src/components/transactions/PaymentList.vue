@@ -1,6 +1,5 @@
 <script setup>
 import { onMounted, ref, watch } from "vue";
-
 import { prepareDataForTransfers } from "../../helpers/prepareDataForTransfers";
 import { prepareDataForUTXO } from "../../helpers/prepareDataForUTXO";
 

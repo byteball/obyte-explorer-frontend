@@ -1,5 +1,6 @@
 <script setup>
 import { inject, onMounted, onUnmounted, watch } from "vue";
+import { useRoute, useRouter } from "vue-router";
 import { storeToRefs } from "pinia";
 import { ArrowCircleUpIcon } from "@heroicons/vue/outline";
 import { EventNames } from "../../enum/eventEnums";
@@ -18,7 +19,6 @@ import {
   scrollUp,
   scrollDown,
 } from "../../services/cytoscape.js";
-import { useRoute, useRouter } from "vue-router";
 
 import { useGlobalStateStore } from "../../stores/globalState";
 import { useInfoStore } from "../../stores/info";

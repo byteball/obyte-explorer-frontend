@@ -1,7 +1,7 @@
 <script setup>
-import Collapse from "../elements/Collapse.vue";
 import { prettifyJson } from "../../helpers/text";
 
+import Collapse from "../elements/Collapse.vue";
 import Link from "../elements/Link.vue";
 
 defineProps(["title", "unit", "type", "rawPayload"]);

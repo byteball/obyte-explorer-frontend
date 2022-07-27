@@ -2,16 +2,17 @@
 import { ref, inject, watch } from "vue";
 import { storeToRefs } from "pinia";
 import { useRouter, useRoute } from "vue-router";
+import { useElementSize, useWindowScroll, useWindowSize } from "@vueuse/core/index";
+import { prepareData } from "../../helpers/asset";
+import { EventNames } from "../../enum/eventEnums";
+
+import PaymentList from "../transactions/PaymentList.vue";
+import FormatAmount from "../FormatAmount.vue";
+import NameBlock from "./NameBlock.vue";
+import ListHolders from "./ListHolders.vue";
+
 import { useGlobalStateStore } from "../../stores/globalState";
 import { useRatesStore } from "../../stores/rates";
-import { EventNames } from "../../enum/eventEnums";
-import { prepareData } from "../../helpers/asset";
-
-import NameBlock from "./NameBlock.vue";
-import FormatAmount from "../FormatAmount.vue";
-import ListHolders from "./ListHolders.vue";
-import PaymentList from "../transactions/PaymentList.vue";
-import { useElementSize, useWindowScroll, useWindowSize } from "@vueuse/core/index";
 
 const router = useRouter();
 const route = useRoute();
@@ -30,9 +31,9 @@ const lastRowids = ref({
 });
 const isNewPageLoaded = ref(true);
 const nextPagesEnded = ref(false);
-
 const PL = ref(null);
 const el = ref(null);
+
 const { height: wHeigth } = useWindowSize();
 const { height } = useElementSize(el);
 const { y } = useWindowScroll();

@@ -1,6 +1,7 @@
 <script setup>
 import { onMounted, ref, watch } from "vue";
 import { storeToRefs } from "pinia";
+import { prettifyJson } from "../../helpers/text";
 
 import Collapse from "../elements/Collapse.vue";
 import Link from "../elements/Link.vue";
@@ -10,7 +11,6 @@ import TransfersView from "../unit/TransfersView.vue";
 
 import { useGlobalStateStore } from "../../stores/globalState";
 import { useInfoStore } from "../../stores/info";
-import { prettifyJson } from "../../helpers/text";
 import { useRatesStore } from "../../stores/rates";
 
 const { info } = storeToRefs(useInfoStore());
