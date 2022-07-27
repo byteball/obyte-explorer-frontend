@@ -1,0 +1,116 @@
+<script setup>
+import { storeToRefs } from "pinia";
+import { ref, watch } from "vue";
+import {
+  checkNonEmptyBalances,
+  clearChange,
+  clearEmptyBalances,
+} from "../../helpers/prepareDataForTransfers";
+
+import Link from "../elements/Link.vue";
+import FormatAmount from "../FormatAmount.vue";
+import Collapse from "../elements/Collapse.vue";
+
+import { useRatesStore } from "../../stores/rates";
+
+const props = defineProps(["message"]);
+
+const { rates } = storeToRefs(useRatesStore());
+const payments = ref([]);
+
+function addToTempPayments(tempPayments, to, message, decimals) {
+  tempPayments.push({
+    to: to,
+    asset: message.asset,
+    assetName: message.assetName,
+    decimals,
+    payload_hash: message.payload_hash,
+  });
+}
+
+watch(props.message, () => {
+  const tempPayments = [];
+  props.message.forEach((message) => {
+    const tempIO = { from: {}, to: {} };
+
+    let decimals = message.assetDecimals || 0;
+    if (message.assetName === "bytes") {
+      decimals = 9;
+    }
+
+    message.inputs.forEach((input) => {
+      if (!tempIO.from[input.to_obj.address]) {
+        tempIO.from[input.to_obj.address] = 0;
+      }
+      tempIO.from[input.to_obj.address] += input.to_obj.amount;
+    });
+
+    message.outputsUnitByAsset.forEach((output) => {
+      if (!tempIO.to[output.address]) {
+        tempIO.to[output.address] = 0;
+      }
+      tempIO.to[output.address] += output.amount;
+    });
+    clearChange(tempIO.from, tempIO.to);
+
+    if (Object.keys(tempIO.from).length === 0) {
+      addToTempPayments(tempPayments, tempIO.to, message, decimals);
+      return;
+    }
+
+    const toAddresses = Object.keys(tempIO.to);
+    if (toAddresses.length === 1 && tempIO.to[toAddresses[0]] === 0) {
+      if (checkNonEmptyBalances(tempIO.from)) {
+        clearEmptyBalances(tempIO.from);
+      }
+
+      for (let k in tempIO.from) {
+        tempIO.to[toAddresses[0]] += tempIO.from[k];
+      }
+
+      addToTempPayments(tempPayments, tempIO.to, message, decimals);
+      return;
+    }
+
+    if (checkNonEmptyBalances(tempIO.to)) {
+      clearEmptyBalances(tempIO.to);
+    }
+
+    addToTempPayments(tempPayments, tempIO.to, message, decimals);
+  });
+
+  payments.value = tempPayments;
+});
+</script>
+
+<template>
+  <div v-if="payments.length">
+    <Collapse title="Payments" :is-sub-collapse="true">
+      <div v-for="paymentsMeta in payments" :key="paymentsMeta.payload_hash">
+        <div
+          v-for="(amount, address) in paymentsMeta.to"
+          :key="address + '_' + paymentsMeta.payload_hash"
+        >
+          <div>
+            <Link :type="'address'" :link="address">{{ address }}</Link>
+          </div>
+          <div class="flex">
+            <FormatAmount
+              :amount="amount"
+              :is-asset="paymentsMeta.asset !== 'null'"
+              :rates="rates"
+              :decimals="paymentsMeta.decimals"
+            />
+            <span v-if="paymentsMeta.asset !== 'null'">
+              <Link :type="'asset'" :link="paymentsMeta.assetName">{{
+                paymentsMeta.assetName
+              }}</Link>
+            </span>
+          </div>
+        </div>
+      </div>
+    </Collapse>
+  </div>
+</template>
+
+<style scoped></style>

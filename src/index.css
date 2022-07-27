@@ -1,0 +1,22 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+#cy {
+  position: absolute;
+  left: 0;
+  right: 34%;
+  top: 4rem;
+  bottom: 0;
+  z-index: 999;
+}
+
+.v-enter-active,
+.v-leave-active {
+  transition: opacity 0.5s ease;
+}
+
+.v-enter-from,
+.v-leave-to {
+  opacity: 0;
+}
