@@ -13,7 +13,7 @@ const app = createApp(App);
 app.use(createPinia());
 app.use(router);
 app.use(socketIoPlugin, {
-  url: "http://localhost:4000",
+  url: import.meta.env.VITE_WS_URL,
 });
 app.use(numberFormatPlugin);
 app.use(autoAnimatePlugin);
