@@ -42,7 +42,7 @@ defineProps(["obj", "address", "isTo"]);
     <template v-else>
       <span>(</span>
       <FormatAmount :amount="obj.amount" :decimals="obj.decimals" :is-asset="true" :rates="false" />
-      <Link :type="'asset'" :link="obj.assetName"> {{ obj.assetName }} </Link>
+      <Link :type="'asset'" :link="obj.assetName">{{ obj.assetName }}</Link>
       <template v-if="isTo">
         <span v-if="obj.spent">
           , spent in <Link :type="'unit'" :link="obj.spent">{{ obj.spent }}</Link>

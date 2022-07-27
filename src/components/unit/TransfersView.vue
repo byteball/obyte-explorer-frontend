@@ -13,12 +13,15 @@ import Collapse from "../elements/Collapse.vue";
 
 import { useRatesStore } from "../../stores/rates";
 
-const props = defineProps(["message"]);
+const props = defineProps(["message", "existsOtherMessages"]);
 
 const { rates } = storeToRefs(useRatesStore());
 const payments = ref([]);
 
 function addToTempPayments(tempPayments, to, message, decimals) {
+  clearEmptyBalances(to);
+  if (!Object.keys(to).length) return;
+
   tempPayments.push({
     to: to,
     asset: message.asset,
@@ -39,6 +42,8 @@ watch(props.message, () => {
     }
 
     message.inputs.forEach((input) => {
+      if (input.output_index === undefined) return;
+
       if (!tempIO.from[input.to_obj.address]) {
         tempIO.from[input.to_obj.address] = 0;
       }
@@ -70,10 +75,6 @@ watch(props.message, () => {
 
       addToTempPayments(tempPayments, tempIO.to, message, decimals);
       return;
-    }
-
-    if (checkNonEmptyBalances(tempIO.to)) {
-      clearEmptyBalances(tempIO.to);
     }
 
     addToTempPayments(tempPayments, tempIO.to, message, decimals);
@@ -111,6 +112,7 @@ watch(props.message, () => {
       </div>
     </Collapse>
   </div>
+  <div v-if="!payments.length && !existsOtherMessages">none</div>
 </template>
 
 <style scoped></style>

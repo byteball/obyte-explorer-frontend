@@ -2,7 +2,7 @@ export function getFormattedObject(amount, bytePayment, decimals, exchangeRates)
   const nameForBytes = decimals ? "GBYTE" : "bytes";
   return {
     value: formatAmountUsingDecimalFormat(amount, decimals),
-    usd: bytePayment ? ` ${nameForBytes}${getUsdText(amount, exchangeRates)}` : "",
+    usd: bytePayment ? `${nameForBytes}${getUsdText(amount, exchangeRates)}` : "",
   };
 }
 

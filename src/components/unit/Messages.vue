@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, ref } from "vue";
+import { onMounted, ref, watch } from "vue";
 import { storeToRefs } from "pinia";
 
 import Collapse from "../elements/Collapse.vue";
@@ -45,7 +45,7 @@ function getTitle(app) {
   }
 }
 
-onMounted(() => {
+function generateMesseges() {
   const msgs = [];
   let shownHiddenPayments = false;
 
@@ -134,12 +134,24 @@ onMounted(() => {
   });
 
   messagesForRender.value = msgs;
+}
+
+onMounted(() => {
+  generateMesseges();
+});
+
+watch(view, () => {
+  generateMesseges();
 });
 </script>
 
 <template>
   <div class="grid gap-y-3" :key="view + '_' + info.unit">
-    <TransfersView v-if="view === 'Transfers'" :message="transfersListForRender" />
+    <TransfersView
+      v-if="view === 'Transfers'"
+      :message="transfersListForRender"
+      :exists-other-messages="!!messagesForRender.length"
+    />
     <div v-for="message in messagesForRender" :key="message.payload_hash">
       <Payment
         v-if="message.type === 'payment'"

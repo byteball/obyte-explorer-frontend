@@ -1,6 +1,8 @@
 function sumAmountByAddressForFrom(from) {
   const obj = {};
   from.forEach((objFrom) => {
+    if (objFrom.commissionType) return;
+
     if (!obj[objFrom.address]) {
       obj[objFrom.address] = 0;
     }
@@ -94,7 +96,6 @@ export function prepareDataForTransfers(unitAssets, objTransactions) {
 
       if (Object.keys(fromAddressesAndAmount).length === 0) {
         fromAddressesAndAmount = { ...toAddressesAndAmount };
-
         return addTransactionToArr(
           transactionsForRender,
           unit,

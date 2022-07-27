@@ -20,6 +20,7 @@ const SI = ref();
 const autoComplete = ref();
 
 function search(value, raw) {
+  value = value.trim();
   if (!value) return;
 
   if (raw) {

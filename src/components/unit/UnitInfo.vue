@@ -75,6 +75,7 @@ const { rates } = storeToRefs(ratesStore);
             :amount="info.headers_commission + info.payload_commission"
             :rates="rates"
           />
+          ({{ info.headers_commission }} headers, {{ info.payload_commission }} payload)
         </TIElement>
         <TIElement title="Level">
           {{ info.level }}

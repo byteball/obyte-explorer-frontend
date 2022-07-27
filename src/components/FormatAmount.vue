@@ -28,8 +28,8 @@ onMounted(() => {
   <div class="inline-block">
     <Clipboard class="pr-1 inline-block" style="margin-top: -2px" :text="String(v.value)" />
     <span v-if="showDollar">$</span>
-    <span v-number-format>{{ v.value }}</span>
-    <span>{{ v.usd }}</span>
+    <span v-number-format>{{ v.value }}</span
+    >&nbsp;<span>{{ v.usd }}</span>
   </div>
 </template>
 
