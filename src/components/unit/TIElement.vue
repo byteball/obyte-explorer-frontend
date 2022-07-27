@@ -3,7 +3,7 @@ defineProps({ title: String });
 </script>
 
 <template>
-  <div class="flex">
+  <div>
     <span class="pr-1 text-gray-600">{{ title }}:</span>
     <span><slot></slot></span>
   </div>

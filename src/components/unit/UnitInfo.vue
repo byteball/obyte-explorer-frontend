@@ -24,7 +24,7 @@ const { rates } = storeToRefs(ratesStore);
 <template>
   <div class="p-2">
     <div v-if="!isReady" class="text-center">Select unit on the left</div>
-    <div v-if="isReady" :key="info.unit" class="grid gap-y-3">
+    <div v-if="isReady" :key="info.unit" class="grid gap-y-3 min-w-max">
       <div>
         <div class="text-sm text-gray-600">Unit ID</div>
         <div>{{ info.unit }}</div>
