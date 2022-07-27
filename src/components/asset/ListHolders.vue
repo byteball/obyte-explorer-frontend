@@ -51,7 +51,7 @@ function getMoreHolders() {
 
 <template>
   <Collapse :title="'Holders'" :closed="true">
-    <div class="grid gap-1" v-debug-directive v-memo="[listHolders]">
+    <div class="grid gap-1" v-memo="[listHolders]">
       <ul class="list-decimal list-inside">
         <li v-for="holder in listHolders" :key="holder.address">
           <Link :type="'address'" :link="holder.address">{{ holder.address }}</Link>

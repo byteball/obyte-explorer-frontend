@@ -2,21 +2,21 @@
 example:
 import { vDebugDirective } from "../../debug/debugDirective";
 
-<div v-debug-directive>
+<div v-debug-directive="'name'">
 </div>
 */
 
 export const vDebugDirective = {
-  created() {
-    console.log("debug-directive:", "created");
+  created(el, binding) {
+    console.log(`debug-directive[${binding.value || "noname"}]: created`);
   },
-  mounted() {
-    console.log("debug-directive:", "mounted");
+  mounted(el, binding) {
+    console.log(`debug-directive[${binding.value || "noname"}]: mounted`);
   },
-  updated() {
-    console.log("debug-directive:", "updated");
+  updated(el, binding) {
+    console.log(`debug-directive[${binding.value || "noname"}]: updated`);
   },
-  unmounted() {
-    console.log("debug-directive:", "unmounted");
+  unmounted(el, binding) {
+    console.log(`debug-directive[${binding.value || "noname"}]: unmounted`);
   },
 };
