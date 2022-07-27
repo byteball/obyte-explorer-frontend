@@ -6,7 +6,7 @@ export const EventNames = {
   Prev: "prevUnits",
   HighlightNode: "highlightNode",
   NotFound: "notFound",
-  New: "new",
+  New: "newUnits",
 
   GetAddressData: "getAddressData",
   LoadNextPageAddressTransactions: "loadNextPageAddressTransactions",
