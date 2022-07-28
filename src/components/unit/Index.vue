@@ -127,7 +127,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div id="up">
+  <div id="up" class="top-40 sm:top-32 right-[2%] xl:right-[35%]">
     <button class="btn btn-ghost btn-circle" @click="resetUnit">
       <ArrowCircleUpIcon class="h-12 w-12 text-gray-700 opacity-70 hover:opacity-90" />
     </button>
@@ -138,7 +138,5 @@ onUnmounted(() => {
 #up {
   z-index: 10000;
   position: absolute;
-  right: 35%;
-  top: 86px;
 }
 </style>

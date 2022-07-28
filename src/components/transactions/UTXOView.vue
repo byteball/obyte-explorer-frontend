@@ -12,7 +12,7 @@ defineProps(["transactions", "address"]);
     v-for="(transactionList, unit) in transactions.transactionList"
     :key="transactions.rowid + '_' + unit"
   >
-    <div class="flex bg-gray-100 p-2 mt-3">
+    <div class="md:flex bg-gray-100 p-2 mt-3">
       <div class="flex-1 font-bold">
         Unit ID:
         <Link :type="'unit'" :link="unit">{{ unit }}</Link>
@@ -20,7 +20,7 @@ defineProps(["transactions", "address"]);
       <div>{{ getDateFromSeconds(transactions.timestamp) }}</div>
     </div>
     <template v-for="transaction in transactionList" :key="transaction.rowid + '_' + unit">
-      <div class="flex items-center flex-row p-2">
+      <div class="lg:flex items-center flex-row p-2">
         <div class="basis-6/12">
           <div
             v-for="from in transaction.from"

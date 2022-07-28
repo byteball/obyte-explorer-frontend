@@ -51,7 +51,7 @@ onBeforeMount(() => {
 </script>
 
 <template>
-  <div class="pt-16">
+  <div class="pt-32 sm:pt-24 lg:pt-16">
     <Navbar />
     <RouterView />
   </div>

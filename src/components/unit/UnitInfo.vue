@@ -1,4 +1,5 @@
 <script setup>
+import { ref, watch } from "vue";
 import { storeToRefs } from "pinia";
 import { getDateFromSeconds, getDurationFromSeconds } from "../../helpers/date";
 import { prettifyJson } from "../../helpers/text";
@@ -16,12 +17,29 @@ import { useRatesStore } from "../../stores/rates";
 
 const { info, isReady } = storeToRefs(useInfoStore());
 const { rates } = storeToRefs(useRatesStore());
+
+const isHidden = ref(false);
+
+watch(info, () => {
+  isHidden.value = false;
+});
+
+function hide() {
+  isHidden.value = true;
+}
 </script>
 
 <template>
-  <div class="p-2">
+  <div
+    class="p-2 w-full xl:w-[34%] xl:block top-32 sm:top-24 lg:top-16"
+    id="info"
+    :class="{ hidden: isHidden }"
+  >
     <div v-if="!isReady" class="text-center">Select unit on the left</div>
-    <div v-if="isReady" :key="info.unit" class="grid gap-y-3">
+    <div v-if="isReady" :key="info.unit" class="grid gap-y-3 text-sm md:text-base">
+      <div class="text-right py-2 px-4 xl:hidden">
+        <a class="link link-hover text-blue-500" @click="hide">Close</a>
+      </div>
       <div>
         <div class="text-sm text-gray-600">Unit ID</div>
         <div>{{ info.unit }}</div>
@@ -97,4 +115,14 @@ const { rates } = storeToRefs(useRatesStore());
   </div>
 </template>
 
-<style scoped></style>
+<style scoped>
+#info {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  border-left: 1px solid #ccc;
+  overflow: auto;
+  z-index: 99999;
+  background-color: #fff;
+}
+</style>

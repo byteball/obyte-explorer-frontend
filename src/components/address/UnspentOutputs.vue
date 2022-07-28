@@ -11,7 +11,7 @@ defineProps(["unspent"]);
 <template>
   <Collapse :title="'Unspent outputs'" :closed="true">
     <div class="grid gap-1" v-memo="[unspent]">
-      <div v-for="u in unspent" class="flex" :key="u.output_id">
+      <div v-for="u in unspent" :key="u.output_id">
         <Link :type="'unit'" :link="u.unit">{{ u.unit }}</Link>
         &nbsp;(<FormatAmount :amount="u.amount" :decimals="u.assetDecimals" :is-asset="true" />
         <Link :type="'asset'" :link="getAssetName(u.asset, u.assetName)">

@@ -121,8 +121,11 @@ function goTo(name) {
 </script>
 
 <template>
-  <div class="navbar bg-base-100 border-b py-0 fixed top-0 left-0 w-full" style="z-index: 1200">
-    <div class="flex-1">
+  <div
+    class="navbar !grid justify-items-center lg:!flex bg-base-100 border-b py-0 fixed top-0 left-0 w-full"
+    style="z-index: 1200"
+  >
+    <div class="grid sm:flex flex-1">
       <a @click="goTo('home')" class="btn btn-ghost normal-case text-xl"
         ><span style="color: #456c91">Obyte</span>.Explorer</a
       >
@@ -145,7 +148,7 @@ function goTo(name) {
       </select>
       <a class="btn btn-ghost normal-case" href="https://obyte.org" target="_blank">Obyte.org</a>
       <a class="btn btn-circle btn-ghost" href="https://twitter.com/ObyteOrg" target="_blank">
-        <IconTwitter class="w-5 h-5" />
+        <IconTwitter class="w-6 h-6" />
       </a>
       <a class="btn btn-circle btn-ghost" href="https://obyte.org/discord" target="_blank">
         <IconDiscord class="w-5 h-5" />
@@ -153,6 +156,12 @@ function goTo(name) {
     </div>
   </div>
 </template>
+
+<style scoped>
+#searchInput {
+  font-size: 14px !important;
+}
+</style>
 
 <style>
 .autoComplete_wrapper > ul > li mark {
