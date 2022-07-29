@@ -80,6 +80,7 @@ setClickHandler((unit) => {
 });
 
 function resetUnit() {
+  infoStore.setInfo({});
   infoStore.setReady(false);
   globalState.setLastUnit("");
   router.push(`/`);
