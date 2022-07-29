@@ -292,8 +292,7 @@ function cyClick(evt) {
 }
 
 function cyTap(evt) {
-  // console.error("tap");
-  // clickHandler(evt.cyTarget.id());
+  clickHandler(evt.cyTarget.id());
 }
 
 function cyPan() {
@@ -530,6 +529,7 @@ export function highlightNode(unit) {
 
     getPrev();
   } else {
+    console.error("GET", unit);
     waitGo = unit;
     getHighlightNode(waitGo);
   }

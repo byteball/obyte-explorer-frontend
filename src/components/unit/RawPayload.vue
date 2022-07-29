@@ -14,10 +14,10 @@ function isObject(obj) {
 <template>
   <Collapse :title="title" :is-sub-collapse="true">
     <div v-for="(value, key) in rawPayload" :key="key">
-      <div class="whitespace-pre-wrap break-words">
+      <div class="whitespace-pre-wrap">
         <span class="text-gray-500">{{ key }}: </span>
-        <span v-if="isObject(value)">{{ prettifyJson(value) }}</span>
-        <span v-else>{{ value }}</span>
+        <span v-if="isObject(value)" style="word-break: break-word">{{ prettifyJson(value) }}</span>
+        <span v-else style="word-break: break-word">{{ value }}</span>
       </div>
     </div>
     <div v-if="type === 'asset'">

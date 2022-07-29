@@ -48,6 +48,8 @@ function infoEmitHandler(data) {
 
 function highlightNodeEmitHandler({ type, data }) {
   switch (type) {
+    case EventNames.Start:
+      return updDag(data);
     case EventNames.Prev:
       return prevHandler(data);
     case EventNames.Next:
@@ -106,8 +108,12 @@ function keyDown(e) {
 watch(
   () => route.params.unit,
   () => {
+    if (route.name !== "home") return;
+
     if (route.params.unit) {
       highlightNode(route.params.unit);
+    } else {
+      resetUnit();
     }
   }
 );

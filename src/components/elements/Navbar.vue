@@ -126,7 +126,7 @@ function goTo(name) {
     style="z-index: 1200"
   >
     <div class="grid sm:flex flex-1">
-      <a @click="goTo('home')" class="btn btn-ghost normal-case text-xl"
+      <a @click="goTo('home')" class="btn btn-ghost normal-case text-xl focus:bg-white"
         ><span style="color: #456c91">Obyte</span>.Explorer</a
       >
       <div class="relative form-control w-3/6 max-w-xs">

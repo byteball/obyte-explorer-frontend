@@ -33,7 +33,7 @@ function hide() {
   <div
     class="p-2 w-full xl:w-[34%] xl:block top-32 sm:top-24 lg:top-16"
     id="info"
-    :class="{ hidden: isHidden }"
+    :class="{ hidden: isHidden || !info.unit }"
   >
     <div v-if="!isReady" class="text-center">Select unit on the left</div>
     <div v-if="isReady" :key="info.unit" class="grid gap-y-3 text-sm md:text-base">

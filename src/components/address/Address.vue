@@ -124,7 +124,7 @@ function back() {
 
 <template>
   <div class="w-full bg-white absolute h-full p-4" style="z-index: 1100">
-    <div class="max-w-6xl mx-auto w-full" ref="el">
+    <div class="max-w-6xl mx-auto w-full text-sm md:text-base" ref="el">
       <div class="text-right">
         <a @click="back" class="link link-hover text-blue-500">Close</a>
       </div>

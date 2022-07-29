@@ -2,6 +2,7 @@ export const EventNames = {
   GetLastUnits: "getLastUnits",
   GetUnit: "getUnit",
   Info: "info",
+  Start: "start",
   Next: "nextUnits",
   Prev: "prevUnits",
   HighlightNode: "highlightNode",
