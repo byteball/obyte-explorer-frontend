@@ -14,6 +14,7 @@ import AddLinksToAddresses from "../elements/AddLinksToAddresses.vue";
 import Link from "../elements/Link.vue";
 import PaymentList from "../transactions/PaymentList.vue";
 import AAResponses from "../transactions/AAResponses.vue";
+import Spinner from "../icons/Spinner.vue";
 import FormatAmount from "../FormatAmount.vue";
 import UnspentOutputs from "./UnspentOutputs.vue";
 import StateVars from "./StateVars.vue";
@@ -127,6 +128,9 @@ function back() {
     <div class="max-w-6xl mx-auto w-full text-sm md:text-base" ref="el">
       <div class="text-right">
         <a @click="back" class="link link-hover text-blue-500">Close</a>
+      </div>
+      <div v-if="!isLoaded" class="text-center">
+        <Spinner class="w-20 h-20 inline-block" />
       </div>
       <div v-if="notFound" class="mt-14 text-center">
         No transactions were found for this address

@@ -49,7 +49,7 @@ defineProps(["listTransactions", "address"]);
             </div>
           </div>
           <div>
-            <div class="w-52 mb-1" v-for="(amount, address) in transactions.to" :key="address">
+            <div class="w-52 mb-1" v-for="(amount, addr) in transactions.to" :key="addr">
               <FormatAmount
                 :decimals="transactions.decimals"
                 :show-dollar="false"
