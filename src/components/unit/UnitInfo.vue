@@ -31,7 +31,7 @@ function hide() {
 
 <template>
   <div
-    class="p-2 w-full xl:w-[34%] xl:block top-32 sm:top-24 lg:top-16"
+    class="p-2 w-full xl:w-[34%] xl:block top-32 sm:top-24 lg:top-16 overscroll-x-none"
     id="info"
     :class="{ hidden: isHidden || !info.unit }"
   >
@@ -99,7 +99,9 @@ function hide() {
           {{ info.witnessed_level }}
         </TIElement>
         <TIElement v-if="info.last_ball_unit" title="Last ball unit">
-          <Link :link="info.last_ball_unit" :type="'unit'">{{ info.last_ball_unit }}</Link>
+          <Link :link="info.last_ball_unit" class="block sm:inline-block" :type="'unit'">{{
+            info.last_ball_unit
+          }}</Link>
         </TIElement>
         <TIElement title="Main chain index">
           {{ info.main_chain_index }}

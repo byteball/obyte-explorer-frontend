@@ -4,11 +4,11 @@ import UnitInfo from "../components/unit/UnitInfo.vue";
 import { onMounted, onUnmounted } from "vue";
 
 onMounted(() => {
-  document.body.classList.add("overscroll-none");
+  document.body.classList.add("overscroll-none", "overflow-hidden");
 });
 
 onUnmounted(() => {
-  document.body.classList.remove("overscroll-none");
+  document.body.classList.remove("overscroll-none", "overflow-hidden");
 });
 </script>
 
