@@ -51,9 +51,11 @@ watch(
       </div>
       <div v-show="transactions.length">
         <div v-if="view === 'UTXO'">
-          <div v-for="t in transactions" :key="t.rowid">
-            <UTXOView :address="address" :transactions="t" />
-          </div>
+          <transition-group name="list" tag="div">
+            <div v-for="t in transactions" :key="t.rowid">
+              <UTXOView :address="address" :transactions="t" />
+            </div>
+          </transition-group>
         </div>
         <TransfersView v-else :address="address" :list-transactions="transactions" />
       </div>
