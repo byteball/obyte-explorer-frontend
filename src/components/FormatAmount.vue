@@ -62,9 +62,7 @@ onMounted(() => {
   <div class="inline-block">
     <span v-if="showDollar">$</span>
     <span v-if="view === 'raw'" @mouseout="out()">{{ v.value }}</span>
-    <span v-if="view === 'formatted'" class="cursor-pointer" @click="showRaw()">{{
-      formattedValue
-    }}</span
+    <span v-if="view === 'formatted'" @click="showRaw()">{{ formattedValue }}</span
     >&nbsp;<span>{{ v.usd }}</span>
   </div>
 </template>

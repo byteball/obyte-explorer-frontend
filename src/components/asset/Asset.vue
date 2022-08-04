@@ -1,10 +1,9 @@
 <script setup>
-import { ref, inject, watch } from "vue";
+import { ref, watch } from "vue";
 import { storeToRefs } from "pinia";
 import { useRouter, useRoute } from "vue-router";
 import { useElementSize, useWindowScroll, useWindowSize } from "@vueuse/core/index";
 import { prepareData } from "../../helpers/asset";
-import { EventNames } from "../../enum/eventEnums";
 
 import PaymentList from "../transactions/PaymentList.vue";
 import FormatAmount from "../FormatAmount.vue";
@@ -14,11 +13,10 @@ import ListHolders from "./ListHolders.vue";
 
 import { useGlobalStateStore } from "../../stores/globalState";
 import { useRatesStore } from "../../stores/rates";
+import fetchAssetInfo from "../../api/fetchAssetInfo";
 
 const router = useRouter();
 const route = useRoute();
-
-const socket = inject("socket.io");
 
 const { lastUnit, view } = storeToRefs(useGlobalStateStore());
 const { rates } = storeToRefs(useRatesStore());
@@ -57,11 +55,13 @@ function assetInfoHandler(_data) {
   isLoaded.value = true;
 }
 
-function urlHandler() {
+async function urlHandler() {
   if (!route.params.asset) return;
 
   isLoaded.value = false;
-  socket.emit(EventNames.GetAssetData, { asset: route.params.asset }, assetInfoHandler);
+
+  const result = await fetchAssetInfo(route.params.asset);
+  assetInfoHandler(result);
 }
 
 function nextPageHandler(data) {
@@ -78,17 +78,14 @@ function nextPageHandler(data) {
   isNewPageLoaded.value = true;
 }
 
-function getNextPage() {
+async function getNextPage() {
   isNewPageLoaded.value = false;
-  socket.emit(
-    EventNames.LoadNextPageAssetTransactions,
-    {
-      asset: route.params.asset,
-      lastInputsROWID: lastRowids.value.lastInputsROWID,
-      lastOutputsROWID: lastRowids.value.lastOutputsROWID,
-    },
-    nextPageHandler
-  );
+
+  const result = await fetchAssetInfo(route.params.asset, {
+    lastInputsROWID: lastRowids.value.lastInputsROWID,
+    lastOutputsROWID: lastRowids.value.lastOutputsROWID,
+  });
+  nextPageHandler(result);
 }
 
 watch(y, () => {

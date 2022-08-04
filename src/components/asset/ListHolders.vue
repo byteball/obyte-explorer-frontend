@@ -1,10 +1,9 @@
 <script setup>
-import { onBeforeMount, ref, inject } from "vue";
-import { EventNames } from "../../enum/eventEnums";
-
+import { onBeforeMount, ref } from "vue";
 import Collapse from "../../components/elements/Collapse.vue";
 import Link from "../../components/elements/Link.vue";
 import FormatAmount from "../../components/FormatAmount.vue";
+import fetchNextHolders from "../../api/fetchNextHolders";
 
 const props = defineProps([
   "holders",
@@ -15,8 +14,6 @@ const props = defineProps([
   "offsetForHolders",
   "typeOfHolders",
 ]);
-
-const socket = inject("socket.io");
 
 const listHolders = ref([]);
 const lEndHolders = ref(false);
@@ -34,16 +31,12 @@ function moreHoldersHandler(data) {
   listHolders.value = [...listHolders.value, ...data.holders];
 }
 
-function getMoreHolders() {
-  socket.emit(
-    EventNames.LoadNextPageAssetHolders,
-    {
-      asset: props.asset,
-      type: props.typeOfHolders,
-      offset: lOffsetForHolders.value,
-    },
-    moreHoldersHandler
-  );
+async function getMoreHolders() {
+  const result = await fetchNextHolders(props.asset, {
+    type: props.typeOfHolders,
+    offset: lOffsetForHolders.value,
+  });
+  moreHoldersHandler(result);
 }
 </script>
 

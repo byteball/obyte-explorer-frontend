@@ -12,7 +12,7 @@ const app = createApp(App);
 app.use(createPinia());
 app.use(router);
 app.use(socketIoPlugin, {
-  url: import.meta.env.VITE_WS_URL,
+  url: import.meta.env.VITE_API_URL,
 });
 app.use(autoAnimatePlugin);
 app.mount("#app");

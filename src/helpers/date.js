@@ -9,5 +9,5 @@ export function getDurationFromSeconds(seconds) {
   if (d.hours === 0) delete d.hours;
   if (d.minutes === 0) delete d.minutes;
 
-  return Duration.fromObject(d).toHuman();
+  return Duration.fromObject(d).toHuman().replace(/,/g, "");
 }

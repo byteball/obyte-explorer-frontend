@@ -1,12 +1,11 @@
 <script setup>
-import { inject, ref, watch } from "vue";
+import { ref, watch } from "vue";
 import { storeToRefs } from "pinia";
 import { useRoute, useRouter } from "vue-router";
 import { useWindowScroll, useElementSize, useWindowSize } from "@vueuse/core";
 import { safePrettifyJson } from "../../helpers/text";
 import { getAssetName } from "../../helpers/asset";
 import { prepareParamsForAddress } from "../../helpers/address";
-import { EventNames } from "../../enum/eventEnums";
 
 import Collapse from "../elements/Collapse.vue";
 import Payload from "../elements/Payload.vue";
@@ -20,12 +19,11 @@ import UnspentOutputs from "./UnspentOutputs.vue";
 import StateVars from "./StateVars.vue";
 
 import { useGlobalStateStore } from "../../stores/globalState";
+import fetchAddressInfo from "../../api/fetchAddressInfo";
 const { lastUnit, view } = storeToRefs(useGlobalStateStore());
 
 const router = useRouter();
 const route = useRoute();
-
-const socket = inject("socket.io");
 
 const isLoaded = ref(false);
 const data = ref({});
@@ -44,19 +42,19 @@ const { height: wHeigth } = useWindowSize();
 const { height } = useElementSize(el);
 const { y } = useWindowScroll();
 
-function addressInfoHandler(_data) {
+function addressInfoHandler(result) {
   isNewPageLoaded.value = true;
   nextPagesEnded.value = false;
 
-  if (_data === null) {
+  if (result.notFound) {
     notFound.value = true;
     return;
   }
 
-  data.value = _data;
+  data.value = result;
   lastRowids.value = {
-    lastInputsROWID: _data.newLastInputsROWID,
-    lastOutputsROWID: _data.newLastOutputsROWID,
+    lastInputsROWID: result.newLastInputsROWID,
+    lastOutputsROWID: result.newLastOutputsROWID,
   };
   notFound.value = false;
   isLoaded.value = true;
@@ -73,7 +71,7 @@ function nextPageHandler(data) {
   isNewPageLoaded.value = true;
 }
 
-function urlHandler() {
+async function urlHandler() {
   if (!route.params.address) return;
 
   const params = prepareParamsForAddress(route);
@@ -82,14 +80,18 @@ function urlHandler() {
   }
 
   isLoaded.value = false;
-  socket.emit(EventNames.GetAddressData, params, addressInfoHandler);
+  const result = await fetchAddressInfo(route.params.address, params);
+  addressInfoHandler(result);
 }
 
-function getNextPage() {
+async function getNextPage() {
   const params = prepareParamsForAddress(route, lastRowids);
 
   isNewPageLoaded.value = false;
-  socket.emit(EventNames.LoadNextPageAddressTransactions, params, nextPageHandler);
+  const result = await fetchAddressInfo(route.params.address, params);
+  if (result.notFound) return;
+
+  nextPageHandler(result);
 }
 
 watch(() => [route.params.address, route.query.asset || "all"].join("_"), urlHandler, {

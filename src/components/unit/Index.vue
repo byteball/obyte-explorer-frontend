@@ -22,6 +22,7 @@ import {
 
 import { useGlobalStateStore } from "../../stores/globalState";
 import { useInfoStore } from "../../stores/info";
+import fetchUnitInfo from "../../api/fetchUnitInfo";
 
 const router = useRouter();
 const route = useRoute();
@@ -30,6 +31,7 @@ const globalState = useGlobalStateStore();
 const infoStore = useInfoStore();
 
 const { searchInputFocused } = storeToRefs(globalState);
+const { info } = storeToRefs(infoStore);
 
 const socket = inject("socket.io");
 
@@ -40,10 +42,19 @@ function updDag(data) {
   }
 }
 
-function infoEmitHandler(data) {
-  infoStore.setInfo(data);
+async function getUnitInfo(unit) {
+  if (info && info.unit === unit) return;
+
+  const result = await fetchUnitInfo(unit);
+  if (result.deleted) {
+    infoStore.setInfo({});
+    globalState.setLastUnit("");
+    deletedHandler(unit);
+  } else {
+    infoStore.setInfo(result);
+    globalState.setLastUnit(result.unit);
+  }
   infoStore.setReady(true);
-  globalState.setLastUnit(data.unit);
 }
 
 function highlightNodeEmitHandler({ type, data }) {
@@ -62,7 +73,7 @@ function highlightNodeEmitHandler({ type, data }) {
 setEmitHandler((name, data) => {
   switch (name) {
     case EventNames.Info:
-      return socket.emit(EventNames.Info, data, infoEmitHandler);
+      return getUnitInfo(data.unit);
     case EventNames.Prev:
       return socket.emit(EventNames.Prev, data, prevHandler);
     case EventNames.Next:
@@ -76,7 +87,6 @@ setEmitHandler((name, data) => {
 
 setClickHandler((unit) => {
   router.push(`/${unit}`);
-  highlightNode(unit);
 });
 
 function resetUnit() {
@@ -91,7 +101,6 @@ function getLastUnits() {
   socket.emit(EventNames.GetLastUnits, updDag);
 }
 
-socket.on("deleted", deletedHandler);
 socket.on("update", getNew);
 
 function keyDown(e) {
@@ -122,6 +131,7 @@ watch(
 onMounted(() => {
   window.addEventListener("keydown", keyDown);
   if (route.params.unit) {
+    getUnitInfo(route.params.unit);
     socket.emit(EventNames.GetUnit, { unit: route.params.unit }, updDag);
     return;
   }
@@ -134,9 +144,12 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div id="up" class="top-40 sm:top-32 right-[2%] xl:right-[35%]">
+  <div id="up" class="top-40 sm:top-28 lg:top-20 right-[2%] xl:right-[35%]">
     <button class="btn btn-ghost btn-circle" @click="resetUnit">
-      <ArrowCircleUpIcon class="h-12 w-12 text-gray-700 opacity-70 hover:opacity-90" />
+      <ArrowCircleUpIcon
+        class="h-12 w-12 text-gray-700 opacity-70 hover:opacity-90"
+        style="margin-top: -1px"
+      />
     </button>
   </div>
 </template>

@@ -529,7 +529,6 @@ export function highlightNode(unit) {
 
     getPrev();
   } else {
-    console.error("GET", unit);
     waitGo = unit;
     getHighlightNode(waitGo);
   }

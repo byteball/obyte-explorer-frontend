@@ -9,6 +9,7 @@ import IconTwitter from "../icons/IconTwitter.vue";
 
 import { useGlobalStateStore } from "../../stores/globalState";
 import { useAssetNamesStore } from "../../stores/assetNames";
+import ObyteLogo from "../icons/ObyteLogo.vue";
 
 const router = useRouter();
 
@@ -126,10 +127,10 @@ function goTo(name) {
     style="z-index: 1200"
   >
     <div class="grid sm:flex flex-1">
-      <a @click="goTo('home')" class="btn btn-ghost normal-case text-xl !bg-white"
-        ><span style="color: #456c91">Obyte</span>.Explorer</a
-      >
-      <div class="relative form-control w-3/6 max-w-xs">
+      <a @click="goTo('home')" class="btn btn-ghost normal-case text-xl !bg-white !pl-0 !pr-2">
+        <ObyteLogo class="h-10" />
+      </a>
+      <div class="relative form-control w-3/6 max-w-xs" style="padding-top: 1px">
         <input
           type="text"
           id="searchInput"
@@ -142,7 +143,7 @@ function goTo(name) {
       </div>
     </div>
     <div class="flex-none gap-2">
-      <select v-model="view" class="select focus:outline-0 focus:border-0">
+      <select v-model="view" class="select focus:outline-0 focus:border-0 !pr-8">
         <option value="Transfers">Transfers view</option>
         <option value="UTXO">UTXO view</option>
       </select>

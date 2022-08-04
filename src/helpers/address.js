@@ -1,8 +1,7 @@
 export function prepareParamsForAddress(route, lastRowids) {
-  const params = { address: route.params.address };
+  const params = {};
   if (route.query.asset) {
-    params.filter = {};
-    params.filter.asset = route.query.asset;
+    params.asset = route.query.asset;
   }
 
   // next page
