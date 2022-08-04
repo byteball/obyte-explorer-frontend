@@ -6,6 +6,7 @@ import { useWindowScroll, useElementSize, useWindowSize } from "@vueuse/core";
 import { safePrettifyJson } from "../../helpers/text";
 import { getAssetName } from "../../helpers/asset";
 import { prepareParamsForAddress } from "../../helpers/address";
+import { useHead } from "@vueuse/head";
 
 import Collapse from "../elements/Collapse.vue";
 import Payload from "../elements/Payload.vue";
@@ -37,16 +38,19 @@ const nextPagesEnded = ref(false);
 const filter = ref("all");
 const PL = ref(null);
 const el = ref(null);
+const title = ref("Obyte Explorer");
 
 const { height: wHeigth } = useWindowSize();
 const { height } = useElementSize(el);
 const { y } = useWindowScroll();
+useHead({ title });
 
 function addressInfoHandler(result) {
   isNewPageLoaded.value = true;
   nextPagesEnded.value = false;
 
   if (result.notFound) {
+    title.value = "Obyte Explorer";
     notFound.value = true;
     return;
   }
@@ -58,6 +62,7 @@ function addressInfoHandler(result) {
   };
   notFound.value = false;
   isLoaded.value = true;
+  title.value = `Obyte Explorer - ${result.address}`;
 }
 
 function nextPageHandler(data) {

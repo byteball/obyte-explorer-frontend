@@ -30,11 +30,9 @@ function toggle() {
         <ChevronRightIcon class="swap-off w-5" />
       </label>
     </div>
-    <!--    <Transition>-->
     <div v-show="open" class="pt-1.5" :class="isSubCollapse ? 'pl-1.5' : ''">
       <slot></slot>
     </div>
-    <!--    </Transition>-->
   </div>
 </template>
 

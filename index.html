@@ -6,15 +6,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tarekraafat/autocomplete.js@10.2.7/dist/css/autoComplete.02.min.css">
     <title>Obyte explorer</title>
+    <link rel="icon" href="/icon_16x16@2x.png">
+    <script type="module" src="/src/assets/js/cytoscape.min.js"></script>
+    <script type="module" src="/src/assets/js/dagre.min.js"></script>
   </head>
   <body>
+  <noscript>
+    We're sorry but Obyte Explorer doesn't work properly without JavaScript enabled. Please enable JavaScript to continue.
+  </noscript>
     <div id="app"></div>
     <div id="cy" class="right-0 xl:right-[34%] overscroll-none"></div>
     <div id="scroll" class="right-0 xl:right-[34%] overscroll-none">
       <div id="scrollBody">&nbsp;</div>
     </div>
     <script type="module" src="/src/main.js"></script>
-    <script src="/src/assets/js/cytoscape.min.js"></script>
-    <script src="/src/assets/js/dagre.min.js"></script>
   </body>
 </html>

@@ -1,8 +1,9 @@
 <script setup>
-import { ref, watch } from "vue";
+import { onMounted, ref, watch } from "vue";
 import { storeToRefs } from "pinia";
 import { getDateFromSeconds, getDurationFromSeconds } from "../../helpers/date";
 import { prettifyJson } from "../../helpers/text";
+import { useHead } from "@vueuse/head";
 
 import Collapse from "../elements/Collapse.vue";
 import ListLinks from "../elements/ListLinks.vue";
@@ -19,9 +20,25 @@ const { info, isReady } = storeToRefs(useInfoStore());
 const { rates } = storeToRefs(useRatesStore());
 
 const isHidden = ref(false);
+const title = ref("Obyte Explorer");
+useHead({ title });
 
 watch(info, () => {
   isHidden.value = false;
+});
+
+watch(isReady, () => {
+  let t = "Obyte Explorer";
+  if (isReady.value) {
+    t += ` - ${info.value.unit}`;
+  }
+  title.value = t;
+});
+
+onMounted(() => {
+  if (isReady.value) {
+    title.value = `Obyte Explorer - ${info.value.unit}`;
+  }
 });
 
 function hide() {
