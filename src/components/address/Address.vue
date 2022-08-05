@@ -221,7 +221,7 @@ function back() {
             </option>
           </select>
         </div>
-        <UnspentOutputs class="mt-4" :unspent="data.unspent" />
+        <UnspentOutputs v-if="view === 'UTXO'" class="mt-4" :unspent="data.unspent" />
         <PaymentList
           class="mt-12"
           ref="PL"
