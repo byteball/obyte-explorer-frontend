@@ -1,5 +1,7 @@
 <script setup>
-import { onBeforeMount, ref } from "vue";
+import { onBeforeMount, ref, inject } from "vue";
+import { useI18n } from "vue-i18n";
+
 import Collapse from "../../components/elements/Collapse.vue";
 import Link from "../../components/elements/Link.vue";
 import FormatAmount from "../../components/FormatAmount.vue";
@@ -15,6 +17,9 @@ const props = defineProps([
   "typeOfHolders",
 ]);
 
+const socket = inject("socket.io");
+
+const { t } = useI18n();
 const listHolders = ref([]);
 const lEndHolders = ref(false);
 const lOffsetForHolders = ref(0);
@@ -32,7 +37,7 @@ function moreHoldersHandler(data) {
 }
 
 async function getMoreHolders() {
-  const result = await fetchNextHolders(props.asset, {
+  const result = await fetchNextHolders(socket, props.asset, {
     type: props.typeOfHolders,
     offset: lOffsetForHolders.value,
   });
@@ -41,7 +46,7 @@ async function getMoreHolders() {
 </script>
 
 <template>
-  <Collapse :title="'Holders'" :closed="true">
+  <Collapse :title="t('holders')" :closed="true">
     <div class="grid gap-1" v-memo="[listHolders]">
       <ul class="list-decimal list-inside">
         <li v-for="holder in listHolders" :key="holder.address">
@@ -51,7 +56,7 @@ async function getMoreHolders() {
         </li>
       </ul>
       <a v-if="!lEndHolders" class="link link-hover text-blue-500 mt-2" @click="getMoreHolders">
-        Show more holders
+        {{ t("showMoreHolders") }}
       </a>
     </div>
   </Collapse>

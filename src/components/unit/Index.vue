@@ -45,15 +45,14 @@ function updDag(data) {
 async function getUnitInfo(unit) {
   if (info && info.unit === unit) return;
 
-  const result = await fetchUnitInfo(unit);
+  const result = await fetchUnitInfo(socket, unit);
   if (result.deleted) {
-    infoStore.setInfo({});
     globalState.setLastUnit("");
     deletedHandler(unit);
   } else {
-    infoStore.setInfo(result);
     globalState.setLastUnit(result.unit);
   }
+  infoStore.setInfo(result);
   infoStore.setReady(true);
 }
 
@@ -66,7 +65,7 @@ function highlightNodeEmitHandler({ type, data }) {
     case EventNames.Next:
       return nextHandler(data);
     case EventNames.NotFound:
-      return alert("Not Found");
+      return;
   }
 }
 
@@ -144,7 +143,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div id="up" class="top-40 sm:top-28 lg:top-20 right-[2%] xl:right-[35%]">
+  <div class="up top-40 sm:top-28 lg:top-20 right-[2%] xl:right-[35%]">
     <button class="btn btn-ghost btn-circle" @click="resetUnit">
       <ArrowCircleUpIcon
         class="h-12 w-12 text-gray-700 opacity-70 hover:opacity-90"
@@ -153,10 +152,3 @@ onUnmounted(() => {
     </button>
   </div>
 </template>
-
-<style scoped>
-#up {
-  z-index: 10000;
-  position: absolute;
-}
-</style>

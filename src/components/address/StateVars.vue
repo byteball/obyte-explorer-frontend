@@ -1,5 +1,6 @@
 <script setup>
 import { onMounted, ref, watch } from "vue";
+import { useI18n } from "vue-i18n";
 import { prettifyJson, parseJSONForStateVars } from "../../helpers/text";
 
 import Payload from "../elements/Payload.vue";
@@ -8,6 +9,7 @@ const props = defineProps(["stateVars", "storageSize"]);
 
 const MAX_DISPLAYED = 30;
 
+const { t } = useI18n();
 const filter = ref("");
 const vars = ref([]);
 const objStateVarsLength = ref(0);
@@ -61,7 +63,7 @@ onMounted(() => {
       v-model="filter"
       placeholder="Search"
     />
-    <span class="text-xs ml-2">All state vars can't be displayed, please filter. </span>
+    <span class="text-xs ml-2">{{ t("tooManyVars") }}</span>
   </div>
 
   <ul class="list-disc list-outside ml-10">
@@ -73,7 +75,7 @@ onMounted(() => {
       <span v-else>{{ v.value }}</span>
     </li>
   </ul>
-  <div class="py-4">Storage size: {{ storageSize }} bytes</div>
+  <div class="py-4">{{ t("storageSize") }}: {{ storageSize }} bytes</div>
 </template>
 
 <style scoped></style>

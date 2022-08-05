@@ -1,15 +1,18 @@
 <script setup>
 import { getAssetName } from "../../helpers/asset";
+import { useI18n } from "vue-i18n";
 
 import Collapse from "../../components/elements/Collapse.vue";
 import Link from "../../components/elements/Link.vue";
 import FormatAmount from "../../components/FormatAmount.vue";
 
 defineProps(["unspent"]);
+
+const { t } = useI18n();
 </script>
 
 <template>
-  <Collapse :title="'Unspent outputs'" :closed="true">
+  <Collapse :title="t('unspent')" :closed="true">
     <div class="grid gap-1" v-memo="[unspent]">
       <div v-for="u in unspent" :key="u.output_id">
         <Link :type="'unit'" :link="u.unit">{{ u.unit }}</Link>

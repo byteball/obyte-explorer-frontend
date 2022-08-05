@@ -100,7 +100,7 @@ function updListNotStableUnit() {
   });
 }
 
-function updateScrollHeigth() {
+function updateScrollHeight() {
   const unitTopPos = _cy.getCenterPan(_cy.getElementById(nodes[0].data.unit)).y;
   const unitLowPos = _cy.getCenterPan(_cy.getElementById(nodes[nodes.length - 1].data.unit)).y;
   scrollTopPos = convertPosPanToPosScroll(unitTopPos, 0);
@@ -259,7 +259,7 @@ function generate(_nodes, _edges) {
   nextPositionUpdates = generateOffset;
   _cy.add(createEdges());
   updListNotStableUnit();
-  updateScrollHeigth();
+  updateScrollHeight();
 }
 
 export function scrollUp() {
@@ -470,7 +470,7 @@ function setNew(_nodes, _edges, newUnits) {
   _cy.add(generateAdd);
   _cy.add(createEdges());
   updListNotStableUnit();
-  updateScrollHeigth();
+  updateScrollHeight();
 }
 
 // set
@@ -501,6 +501,7 @@ function getHighlightNode(unit) {
 }
 
 export function highlightNode(unit) {
+  emitHandler(EventNames.Info, { unit });
   if (!_cy) createCy();
   if (activeNode) _cy.getElementById(activeNode).removeClass("active");
   const el = _cy.getElementById(unit);
@@ -509,7 +510,6 @@ export function highlightNode(unit) {
     const elPositionY = el.position().y;
     el.addClass("active");
     activeNode = el.id();
-    emitHandler(EventNames.Info, { unit: activeNode });
     if (elPositionY < extent.y1 || elPositionY > extent.y2) {
       bWaitingForPrev = true;
       _cy.stop();

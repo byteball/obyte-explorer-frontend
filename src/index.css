@@ -28,3 +28,8 @@
 .list-leave-to {
   opacity: 0;
 }
+
+.up {
+  z-index: 1100 !important;
+  position: absolute !important;
+}

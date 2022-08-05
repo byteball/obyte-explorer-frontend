@@ -1,4 +1,5 @@
 <script setup>
+import { useI18n } from "vue-i18n";
 import Link from "../elements/Link.vue";
 import Payload from "../elements/Payload.vue";
 
@@ -6,6 +7,8 @@ import { getDateFromSeconds } from "../../helpers/date";
 import { prettifyJson, safeJSONParse } from "../../helpers/text";
 
 defineProps(["arrAaResponses"]);
+
+const { t } = useI18n();
 </script>
 
 <template>
@@ -13,10 +16,10 @@ defineProps(["arrAaResponses"]);
     <div class="flex bg-gray-100 p-2">
       <div class="flex-1 font-bold">
         <div v-if="response.trigger_unit">
-          Trigger unit:
+          {{ t("triggerUnitID") }}:
           <Link :type="'unit'" :link="response.trigger_unit">{{ response.trigger_unit }}</Link>
         </div>
-        <div v-else>From {{ response.aa_address }}</div>
+        <div v-else>{{ t("from") }} {{ response.aa_address }}</div>
       </div>
       <div v-if="response.timestamp">{{ getDateFromSeconds(response.timestamp) }}</div>
     </div>
@@ -24,24 +27,24 @@ defineProps(["arrAaResponses"]);
       <ul class="list-disc list-outside ml-10 mt-2 mb-6">
         <li>
           <div v-if="response.trigger_address">
-            Trigger address:
+            {{ t("triggerAddress") }}:
             <Link :type="'address'" :link="response.trigger_address">{{
               response.trigger_address
             }}</Link>
           </div>
           <div v-else>
-            AA address:
+            {{ t("aaAdress") }}:
             <Link :type="'address'" :link="response.aa_address">{{ response.aa_address }}</Link>
           </div>
         </li>
         <li v-if="response.mci">MCI: {{ response.mci }}</li>
-        <li>{{ response.bounced ? "Bounced" : "Not bounced" }}</li>
+        <li>{{ response.bounced ? t("bounced") : t("notBounced") }}</li>
         <li v-if="response.response_unit">
-          Response unit:
+          {{ t("responseUnit") }}:
           <Link :type="'unit'" :link="response.response_unit">{{ response.response_unit }}</Link>
         </li>
         <li>
-          Response:
+          {{ t("response") }}:
           <Payload>{{ prettifyJson(safeJSONParse(response.response)) }}</Payload>
         </li>
       </ul>

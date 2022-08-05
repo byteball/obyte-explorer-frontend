@@ -6,6 +6,7 @@ export const useGlobalStateStore = defineStore("globalState", {
       view: "Transfers",
       lastUnit: "",
       searchInputFocused: false,
+      wsConnected: false,
     };
   },
   actions: {
@@ -17,6 +18,9 @@ export const useGlobalStateStore = defineStore("globalState", {
     },
     setSearchInputFocused(value) {
       this.searchInputFocused = value;
+    },
+    setWSConnected(value) {
+      this.wsConnected = value;
     },
   },
 });

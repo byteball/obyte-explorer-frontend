@@ -1,4 +1,5 @@
 <script setup>
+import { useI18n } from "vue-i18n";
 import Collapse from "../elements/Collapse.vue";
 import Link from "../elements/Link.vue";
 import FormatAmount from "../FormatAmount.vue";
@@ -12,6 +13,8 @@ defineProps([
   "assetName",
   "assetDecimals",
 ]);
+
+const { t } = useI18n();
 </script>
 
 <template>
@@ -24,7 +27,7 @@ defineProps([
         <span>)</span>
       </div>
     </template>
-    <div class="font-bold">Inputs</div>
+    <div class="font-bold">{{ t("labelInputs") }}</div>
     <div v-for="(input, index) in inputs" :key="index">
       <div v-if="input.type && input.type === 'issue'">
         <div>Type: Issue</div>
@@ -73,7 +76,7 @@ defineProps([
         </span>
       </div>
     </div>
-    <div class="font-bold">Outputs</div>
+    <div class="font-bold">{{ t("labelOutputs") }}</div>
     <div v-for="output in outputsUnitByAsset" :key="output.output_id">
       <div>
         <FormatAmount

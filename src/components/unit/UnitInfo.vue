@@ -4,6 +4,7 @@ import { storeToRefs } from "pinia";
 import { getDateFromSeconds, getDurationFromSeconds } from "../../helpers/date";
 import { prettifyJson } from "../../helpers/text";
 import { useHead } from "@vueuse/head";
+import { useI18n } from "vue-i18n";
 
 import Collapse from "../elements/Collapse.vue";
 import ListLinks from "../elements/ListLinks.vue";
@@ -18,6 +19,8 @@ import { useRatesStore } from "../../stores/rates";
 
 const { info, isReady } = storeToRefs(useInfoStore());
 const { rates } = storeToRefs(useRatesStore());
+
+const { t } = useI18n();
 
 const isHidden = ref(false);
 const title = ref("Obyte Explorer");
@@ -52,84 +55,97 @@ function hide() {
     id="info"
     :class="{ hidden: isHidden || !info.unit }"
   >
-    <div v-if="!isReady" class="text-center">Select unit on the left</div>
-    <div v-if="isReady" :key="info.unit" class="grid gap-y-3 text-sm md:text-base">
-      <div class="text-right py-2 px-4 xl:hidden">
-        <a class="link link-hover text-blue-500" @click="hide">Close</a>
+    <div v-if="!isReady" class="text-center">{{ t("selectUnit") }}</div>
+    <div v-if="isReady">
+      <div v-if="info.deleted" class="text-center font-bold">
+        {{ t("infoMessageUnitNotFound") }}
       </div>
-      <div>
-        <div class="text-sm text-gray-600">Unit ID</div>
-        <div>{{ info.unit }}</div>
-      </div>
-      <div>
-        <div class="text-sm text-gray-600">Received</div>
-        <div>{{ getDateFromSeconds(info.timestamp) }}</div>
-      </div>
-      <div v-if="info.full_node_confirmation_delay">
-        <div class="text-sm text-gray-600">Confirmation delay (full node)</div>
+      <div v-if="info.unit" :key="info.unit" class="grid gap-y-3 text-sm md:text-base">
+        <div class="text-right py-2 px-4 xl:hidden">
+          <a class="link link-hover text-blue-500" @click="hide">{{ t("closeButton") }}</a>
+        </div>
         <div>
-          {{ getDurationFromSeconds(info.full_node_confirmation_delay) }}
+          <div class="text-sm text-gray-600">{{ t("unitID") }}</div>
+          <div>{{ info.unit }}</div>
         </div>
-      </div>
-      <div v-if="info.light_node_confirmation_delay">
-        <div class="text-sm text-gray-600">Confirmation delay (light node)</div>
         <div>
-          {{ getDurationFromSeconds(info.light_node_confirmation_delay) }}
+          <div class="text-sm text-gray-600">{{ t("received") }}</div>
+          <div>{{ getDateFromSeconds(info.timestamp) }}</div>
         </div>
+        <div v-if="info.full_node_confirmation_delay">
+          <div class="text-sm text-gray-600">{{ t("confDelayFull") }}</div>
+          <div>
+            {{ getDurationFromSeconds(info.full_node_confirmation_delay) }}
+          </div>
+        </div>
+        <div v-if="info.light_node_confirmation_delay">
+          <div class="text-sm text-gray-600">{{ t("confDelayLight") }}</div>
+          <div>
+            {{ getDurationFromSeconds(info.light_node_confirmation_delay) }}
+          </div>
+        </div>
+        <Collapse :title="t('authors')">
+          <div v-for="author in info.authors" :key="author.address">
+            <Link :type="'address'" :link="author.address">{{ author.address }}</Link>
+            <Collapse
+              v-if="author.definition"
+              :title="t('labelDefinition')"
+              :is-sub-collapse="true"
+              :closed="true"
+              class="whitespace-pre-wrap break-words"
+              >{{ prettifyJson(JSON.parse(author.definition)) }}</Collapse
+            >
+          </div>
+        </Collapse>
+        <Collapse :title="t('children')"><ListLinks :links="info.child" :type="'unit'" /></Collapse>
+        <Collapse :title="t('parents')"
+          ><ListLinks :links="info.parents" :type="'unit'"
+        /></Collapse>
+        <Collapse :title="t('messages')">
+          <Messages />
+        </Collapse>
+        <Collapse
+          class="pt-1.5"
+          v-if="info.arrAaResponses"
+          :title="t('aaResponses')"
+          :closed="true"
+        >
+          <AAResponses :arr-aa-responses="info.arrAaResponses" />
+        </Collapse>
+        <Collapse :title="t('witnesses')" :closed="true"
+          ><ListLinks :links="info.witnesses" :type="'address'"
+        /></Collapse>
+        <Collapse :title="t('techInfo')">
+          <TIElement :title="t('labelFees')">
+            <FormatAmount
+              :amount="info.headers_commission + info.payload_commission"
+              :rates="rates"
+            />
+            ({{ info.headers_commission }} {{ t("labelHeaders") }}, {{ info.payload_commission }}
+            {{ t("labelPayload") }})
+          </TIElement>
+          <TIElement :title="t('labelLevel')">
+            {{ info.level }}
+          </TIElement>
+          <TIElement :title="t('labelWitnessedLevel')">
+            {{ info.witnessed_level }}
+          </TIElement>
+          <TIElement v-if="info.last_ball_unit" :title="t('labelLastBallUnit')">
+            <Link :link="info.last_ball_unit" class="block sm:inline-block" :type="'unit'">{{
+              info.last_ball_unit
+            }}</Link>
+          </TIElement>
+          <TIElement :title="t('labelMci')">
+            {{ info.main_chain_index }}
+          </TIElement>
+          <TIElement :title="t('labelLatestMci')">
+            {{ info.latest_included_mc_index }}
+          </TIElement>
+          <TIElement :title="t('labelIsStable')">
+            {{ info.is_stable ? t("statusFinal") : t("statusNotStable") }}
+          </TIElement>
+        </Collapse>
       </div>
-      <Collapse title="Authors">
-        <div v-for="author in info.authors" :key="author.address">
-          <Link :type="'address'" :link="author.address">{{ author.address }}</Link>
-          <Collapse
-            v-if="author.definition"
-            title="Definition"
-            :is-sub-collapse="true"
-            :closed="true"
-            class="whitespace-pre-wrap break-words"
-            >{{ prettifyJson(JSON.parse(author.definition)) }}</Collapse
-          >
-        </div>
-      </Collapse>
-      <Collapse title="Children"><ListLinks :links="info.child" :type="'unit'" /></Collapse>
-      <Collapse title="Parents"><ListLinks :links="info.parents" :type="'unit'" /></Collapse>
-      <Collapse title="Messages">
-        <Messages />
-      </Collapse>
-      <Collapse class="pt-1.5" v-if="info.arrAaResponses" :title="'AA responses'" :closed="true">
-        <AAResponses :arr-aa-responses="info.arrAaResponses" />
-      </Collapse>
-      <Collapse title="Witnesses" :closed="true"
-        ><ListLinks :links="info.witnesses" :type="'address'"
-      /></Collapse>
-      <Collapse title="Technical information">
-        <TIElement title="Fees">
-          <FormatAmount
-            :amount="info.headers_commission + info.payload_commission"
-            :rates="rates"
-          />
-          ({{ info.headers_commission }} headers, {{ info.payload_commission }} payload)
-        </TIElement>
-        <TIElement title="Level">
-          {{ info.level }}
-        </TIElement>
-        <TIElement title="Witnessed level">
-          {{ info.witnessed_level }}
-        </TIElement>
-        <TIElement v-if="info.last_ball_unit" title="Last ball unit">
-          <Link :link="info.last_ball_unit" class="block sm:inline-block" :type="'unit'">{{
-            info.last_ball_unit
-          }}</Link>
-        </TIElement>
-        <TIElement title="Main chain index">
-          {{ info.main_chain_index }}
-        </TIElement>
-        <TIElement title="Latest included mc index">
-          {{ info.latest_included_mc_index }}
-        </TIElement>
-        <TIElement title="Status">
-          {{ info.is_stable ? "stable/confirmed/final" : "not stable" }}
-        </TIElement>
-      </Collapse>
     </div>
   </div>
 </template>
@@ -141,7 +157,7 @@ function hide() {
   bottom: 0;
   border-left: 1px solid #ccc;
   overflow: auto;
-  z-index: 99999;
+  z-index: 1500;
   background-color: #fff;
 }
 </style>

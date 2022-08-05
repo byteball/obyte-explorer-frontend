@@ -6,9 +6,11 @@ import { prepareDataForUTXO } from "../../helpers/prepareDataForUTXO";
 import Collapse from "../elements/Collapse.vue";
 import UTXOView from "./UTXOView.vue";
 import TransfersView from "./TransfersView.vue";
+import { useI18n } from "vue-i18n";
 
 const props = defineProps(["unitAssets", "objTransactions", "address", "view"]);
 
+const { t } = useI18n();
 const transactions = ref([]);
 
 function prepareData(unitAssets, objTransactions) {
@@ -44,7 +46,7 @@ watch(
 </script>
 
 <template>
-  <Collapse :title="'Transactions'" class="pt-4">
+  <Collapse :title="t('transactions')" class="pt-4">
     <div class="mt-2">
       <div v-show="!transactions.length" class="text-center">
         No transactions found, it may be worth changing the filter

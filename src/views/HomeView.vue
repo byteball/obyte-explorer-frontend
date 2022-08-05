@@ -1,7 +1,8 @@
 <script setup>
+import { onMounted, onUnmounted } from "vue";
 import UnitComponent from "../components/unit/Index.vue";
 import UnitInfo from "../components/unit/UnitInfo.vue";
-import { onMounted, onUnmounted } from "vue";
+import ContentForLegend from "../components/elements/ContentForLegend.vue";
 
 onMounted(() => {
   document.body.classList.add("overscroll-none", "overflow-hidden");
@@ -13,6 +14,7 @@ onUnmounted(() => {
 </script>
 
 <template>
+  <ContentForLegend />
   <UnitComponent />
   <UnitInfo />
 </template>

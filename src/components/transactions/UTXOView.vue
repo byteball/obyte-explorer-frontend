@@ -1,4 +1,5 @@
 <script setup>
+import { useI18n } from "vue-i18n";
 import { ArrowRightIcon } from "@heroicons/vue/solid";
 import { getDateFromSeconds } from "../../helpers/date";
 
@@ -6,6 +7,8 @@ import UTXOListByAsset from "./UTXOListByAsset.vue";
 import Link from "../elements/Link.vue";
 
 defineProps(["transactions", "address"]);
+
+const { t } = useI18n();
 </script>
 <template>
   <div
@@ -14,7 +17,7 @@ defineProps(["transactions", "address"]);
   >
     <div class="md:flex bg-gray-100 p-2 mt-3">
       <div class="flex-1 font-bold">
-        Unit ID:
+        {{ t("unitID") }}:
         <Link :type="'unit'" :link="unit">{{ unit }}</Link>
       </div>
       <div>{{ getDateFromSeconds(transactions.timestamp) }}</div>

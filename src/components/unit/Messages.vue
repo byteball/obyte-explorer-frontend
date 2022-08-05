@@ -1,6 +1,7 @@
 <script setup>
 import { onMounted, ref, watch } from "vue";
 import { storeToRefs } from "pinia";
+import { useI18n } from "vue-i18n";
 import { prettifyJson } from "../../helpers/text";
 
 import Collapse from "../elements/Collapse.vue";
@@ -17,29 +18,30 @@ const { info } = storeToRefs(useInfoStore());
 const { rates } = storeToRefs(useRatesStore());
 const { view } = storeToRefs(useGlobalStateStore());
 
+const { t } = useI18n();
 const messagesForRender = ref([]);
 const transfersListForRender = ref([]);
 
 function getTitle(app) {
   switch (app) {
     case "payment":
-      return "Payment";
+      return t("appTypePayment");
     case "asset":
-      return "Definition of new asset";
+      return t("appTypeAsset");
     case "data":
-      return "Data";
+      return t("appTypeData");
     case "data_feed":
-      return "Data feed";
+      return t("appTypeDataFeed");
     case "profile":
-      return "Profile";
+      return t("appTypeProfile");
     case "attestation":
-      return "Attestation";
+      return t("appTypeAttestation");
     case "poll":
-      return "Poll";
+      return t("appTypePoll");
     case "vote":
-      return "Vote";
+      return t("appTypeVote");
     case "text":
-      return "Text";
+      return t("appTypeText");
     default:
       return app.substring(0, 1).toUpperCase() + app.substring(1);
   }
@@ -55,7 +57,7 @@ function generateMesseges() {
         if (view.value === "Transfers") return;
 
         msgs.push({
-          title: "Hidden payments",
+          title: t("hiddenPayments"),
           type: "hidden",
           asset: "",
           payload_hash: m.payload_hash,

@@ -2,6 +2,7 @@
 import { onBeforeMount, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { storeToRefs } from "pinia";
 import { useRouter } from "vue-router";
+import { useI18n } from "vue-i18n";
 
 import AutoComplete from "@tarekraafat/autocomplete.js";
 import IconDiscord from "../icons/IconDiscord.vue";
@@ -11,6 +12,7 @@ import { useGlobalStateStore } from "../../stores/globalState";
 import { useAssetNamesStore } from "../../stores/assetNames";
 import ObyteLogo from "../icons/ObyteLogo.vue";
 
+const { t } = useI18n();
 const router = useRouter();
 
 const globalState = useGlobalStateStore();
@@ -79,7 +81,7 @@ onMounted(() => {
   autoComplete.value = new AutoComplete({
     selector: "#searchInput",
     submit: true,
-    placeHolder: "Search for unit, address or asset",
+    placeHolder: t("searchUnitOrAddress"),
     data: {
       src: async () => {
         return assetNames.value;
