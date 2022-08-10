@@ -64,11 +64,10 @@ function prepareDataForPieFromBalances(balances) {
       asset = "GBYTE";
       decimals = 9;
     }
+    if (!rates.value[`${asset}_USD`]) continue;
 
     let value = balance / 10 ** decimals;
-    if (rates.value[`${asset}_USD`]) {
-      value = Number((rates.value[`${asset}_USD`] * value).toFixed(2));
-    }
+    value = Number((rates.value[`${asset}_USD`] * value).toFixed(2));
 
     data.push({ value, name: assetName });
   }
