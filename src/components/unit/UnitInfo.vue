@@ -67,7 +67,10 @@ function hide() {
         </div>
         <div>
           <div class="text-sm text-gray-600">{{ t("unitID") }}</div>
-          <div><Clipboard class="inline-block" :text="info.unit" /> {{ info.unit }}</div>
+          <div>
+            {{ info.unit }}
+            <Clipboard class="inline-block" :text="info.unit" style="margin-top: -2px" />
+          </div>
         </div>
         <div>
           <div class="text-sm text-gray-600">{{ t("received") }}</div>

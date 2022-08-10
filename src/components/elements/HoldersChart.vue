@@ -29,6 +29,7 @@ const option = ref({
       type: "pie",
       radius: "80%",
       minShowLabelAngle: 4,
+      cursor: "default",
       data: props.data,
       emphasis: {
         itemStyle: {

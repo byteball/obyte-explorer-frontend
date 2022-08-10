@@ -26,6 +26,7 @@ const option = ref({
       type: "pie",
       radius: "80%",
       minShowLabelAngle: 20,
+      cursor: "default",
       label: {
         position: "inner",
         fontSize: 11,
