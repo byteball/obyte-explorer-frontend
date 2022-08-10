@@ -22,7 +22,7 @@ const router = createRouter({
       component: () => import("../views/AddressView.vue"),
     },
     {
-      path: "/asset/:asset",
+      path: "/asset/:asset(.*)",
       name: "asset",
       component: () => import("../views/AssetView.vue"),
     },

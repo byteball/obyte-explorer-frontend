@@ -36,6 +36,7 @@ function prepareDataForPieFromHolders(holders) {
   const data = [];
   let sum = 0;
   let isSlicedList = false;
+  const decimals = props.decimals || 0;
 
   if (holders.length > 20) {
     holders = holders.slice(0, 20);
@@ -43,7 +44,7 @@ function prepareDataForPieFromHolders(holders) {
   }
 
   holders.forEach((v) => {
-    const value = v.balance / 10 ** props.decimals;
+    const value = v.balance / 10 ** decimals;
     sum += value;
     data.push({ value, name: v.address });
   });
