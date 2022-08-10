@@ -67,9 +67,9 @@ function hide() {
         </div>
         <div>
           <div class="text-sm text-gray-600">{{ t("unitID") }}</div>
-          <div>
+          <div class="flex items-center">
             {{ info.unit }}
-            <Clipboard class="inline-block" :text="info.unit" style="margin-top: -2px" />
+            <Clipboard class="h-5 ml-1" :text="info.unit" />
           </div>
         </div>
         <div>
