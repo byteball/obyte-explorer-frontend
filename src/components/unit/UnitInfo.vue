@@ -69,7 +69,7 @@ function hide() {
           <div class="text-sm text-gray-600">{{ t("unitID") }}</div>
           <div class="flex items-center">
             {{ info.unit }}
-            <Clipboard class="h-5 ml-1" :text="info.unit" />
+            <Clipboard class="h-5 ml-1" style="padding-top: 1px" :text="info.unit" />
           </div>
         </div>
         <div>
