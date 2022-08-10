@@ -8,6 +8,7 @@ export function getAssetName(asset, assetName) {
 
 export function prepareData(_data, rates) {
   _data.name = _data.name ? _data.name : _data.assetUnit;
+  if (!_data.decimals) _data.decimals = 0;
 
   if (_data.name === "Bytes") {
     _data.name = "GBYTE";
@@ -51,12 +52,14 @@ export function prepareData(_data, rates) {
   if (rates.value[`${_data.assetUnit}_USD`]) {
     _data.dollarPrice = rates.value[`${_data.assetUnit}_USD`];
 
-    if (!_data.decimals) _data.decimals = 0;
-
     _data.supply = _data.supply / 10 ** _data.decimals;
 
     _data.marketCap = _data.dollarPrice * _data.supply;
+
+    return _data;
   }
+
+  _data.supply = _data.supply / 10 ** _data.decimals;
 
   return _data;
 }
