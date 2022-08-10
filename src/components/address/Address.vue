@@ -252,12 +252,12 @@ function back() {
                 </option>
               </select>
             </div>
+            <UnspentOutputs v-if="view === 'UTXO'" class="mt-4" :unspent="data.unspent" />
           </div>
           <div class="flex justify-center">
-            <BalancesChart class="h-56 w-56" :data="paramsForPie" name="Balances" />
+            <BalancesChart class="h-80 w-80" :data="paramsForPie" name="Balances" />
           </div>
         </div>
-        <UnspentOutputs v-if="view === 'UTXO'" class="mt-4" :unspent="data.unspent" />
         <PaymentList
           class="mt-12"
           ref="PL"

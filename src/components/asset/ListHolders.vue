@@ -87,7 +87,7 @@ async function getMoreHolders() {
   <div>
     <HoldersChart
       ref="chart"
-      class="h-60 w-full py-8"
+      class="h-96 w-full py-8"
       :data="paramsForPie"
       name="Holders"
       :symbol="symbol"

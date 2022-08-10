@@ -5,6 +5,7 @@ import { CanvasRenderer } from "echarts/renderers";
 import { PieChart } from "echarts/charts";
 import { TitleComponent, TooltipComponent, LegendComponent } from "echarts/components";
 import VChart from "vue-echarts";
+import { format } from "../../helpers/amount";
 
 use([CanvasRenderer, PieChart, TitleComponent, TooltipComponent, LegendComponent]);
 
@@ -15,14 +16,19 @@ const chart = ref();
 const option = ref({
   tooltip: {
     trigger: "item",
-    formatter: `{b}<br />{c} ${props.symbol} ({d}%)`,
     position: "top",
+    formatter: function (params) {
+      return `${params.data.name}<br/>${format(params.data.value)} ${props.symbol} (${
+        params.percent
+      }%)`;
+    },
   },
   series: [
     {
       name: props.name,
       type: "pie",
       radius: "80%",
+      minShowLabelAngle: 4,
       data: props.data,
       emphasis: {
         itemStyle: {

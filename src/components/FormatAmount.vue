@@ -1,6 +1,6 @@
 <script setup>
 import { onMounted, ref } from "vue";
-import { getFormattedObject } from "../helpers/amount";
+import { format, getFormattedObject } from "../helpers/amount";
 
 const props = defineProps(["amount", "isAsset", "decimals", "rates", "showDollar"]);
 
@@ -11,26 +11,6 @@ const v = ref({
 
 const formattedValue = ref("");
 const view = ref("formatted");
-
-function format(number) {
-  let sNumber = String(number);
-  let decimal = "";
-  if (sNumber.includes(".")) {
-    const s = sNumber.split(".");
-    sNumber = s[0];
-    decimal = "." + s[1];
-  }
-  return (
-    sNumber
-      .replace(
-        new RegExp("^(\\d{" + (sNumber.length % 3 ? sNumber.length % 3 : 0) + "})(\\d{3})", "g"),
-        "$1 $2"
-      )
-      .replace(/(\d{3})+?/gi, "$1 ")
-      .trim()
-      .replace(/\s/gi, ",") + decimal
-  );
-}
 
 function updValue() {
   v.value = getFormattedObject(

@@ -27,3 +27,23 @@ export function getUsdText(byteAmount, exchangeRates) {
 
   return ` ≈ $${usdAmount.toPrecision(2)}`;
 }
+
+export function format(number) {
+  let sNumber = String(number);
+  let decimal = "";
+  if (sNumber.includes(".")) {
+    const s = sNumber.split(".");
+    sNumber = s[0];
+    decimal = "." + s[1];
+  }
+  return (
+    sNumber
+      .replace(
+        new RegExp("^(\\d{" + (sNumber.length % 3 ? sNumber.length % 3 : 0) + "})(\\d{3})", "g"),
+        "$1 $2"
+      )
+      .replace(/(\d{3})+?/gi, "$1 ")
+      .trim()
+      .replace(/\s/gi, ",") + decimal
+  );
+}
