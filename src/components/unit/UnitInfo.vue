@@ -10,6 +10,7 @@ import Collapse from "../elements/Collapse.vue";
 import ListLinks from "../elements/ListLinks.vue";
 import FormatAmount from "../FormatAmount.vue";
 import Link from "../elements/Link.vue";
+import Clipboard from "../elements/Clipboard.vue";
 import AAResponses from "../transactions/AAResponses.vue";
 import TIElement from "./TIElement.vue";
 import Messages from "./Messages.vue";
@@ -66,7 +67,7 @@ function hide() {
         </div>
         <div>
           <div class="text-sm text-gray-600">{{ t("unitID") }}</div>
-          <div>{{ info.unit }}</div>
+          <div><Clipboard class="inline-block" :text="info.unit" /> {{ info.unit }}</div>
         </div>
         <div>
           <div class="text-sm text-gray-600">{{ t("received") }}</div>

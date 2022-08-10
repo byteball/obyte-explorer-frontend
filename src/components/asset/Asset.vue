@@ -125,7 +125,7 @@ watch(() => route.params.asset, urlHandler, {
 });
 
 function back() {
-  if (lastUnit) {
+  if (lastUnit.value) {
     return router.push({ path: "/" + lastUnit.value });
   }
 
@@ -155,8 +155,7 @@ function back() {
         <div class="mt-4" v-if="data.supply">
           <div>
             Total supply:
-            <FormatAmount :amount="data.supply" :is-asset="true" />
-            {{ data.name }}
+            <FormatAmount :amount="data.supply" :is-asset="true" />{{ data.name }}
           </div>
           <template v-if="data.dollarPrice">
             <div>
@@ -184,12 +183,13 @@ function back() {
           <ListHolders
             class="mt-4"
             :holders="data.holders"
-            :name="data.name"
+            :symbol="data.name"
             :asset="route.params.asset"
             :decimals="data.decimals"
             :end-holders="data.endHolders"
             :offset-for-holders="data.offsetForHolders"
             :type-of-holders="data.typeOfHolders"
+            :supply="data.supply"
           />
           <PaymentList
             class="mt-12"

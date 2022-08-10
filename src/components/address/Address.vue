@@ -13,6 +13,7 @@ import Collapse from "../elements/Collapse.vue";
 import Payload from "../elements/Payload.vue";
 import AddLinksToAddresses from "../elements/AddLinksToAddresses.vue";
 import Link from "../elements/Link.vue";
+import BalancesChart from "../elements/BalancesChart.vue";
 import PaymentList from "../transactions/PaymentList.vue";
 import AAResponses from "../transactions/AAResponses.vue";
 import Spinner from "../icons/Spinner.vue";
@@ -21,8 +22,11 @@ import UnspentOutputs from "./UnspentOutputs.vue";
 import StateVars from "./StateVars.vue";
 
 import { useGlobalStateStore } from "../../stores/globalState";
-import fetchAddressInfo from "../../api/fetchAddressInfo";
+import { useRatesStore } from "../../stores/rates";
 const { lastUnit, view } = storeToRefs(useGlobalStateStore());
+const { rates } = storeToRefs(useRatesStore());
+
+import fetchAddressInfo from "../../api/fetchAddressInfo";
 
 const socket = inject("socket.io");
 const { t } = useI18n();
@@ -43,16 +47,40 @@ const filter = ref("all");
 const PL = ref(null);
 const el = ref(null);
 const title = ref("Obyte Explorer");
+const paramsForPie = ref([]);
 
 const { height: wHeigth } = useWindowSize();
 const { height } = useElementSize(el);
 const { y } = useWindowScroll();
 useHead({ title });
 
+function prepareDataForPieFromBalances(balances) {
+  const data = [];
+  for (let asset in balances) {
+    const balance = balances[asset].balance;
+    let decimals = balances[asset].assetDecimals || 0;
+    const assetName = balances[asset].assetName || "GBYTE";
+    if (asset === "bytes") {
+      asset = "GBYTE";
+      decimals = 9;
+    }
+
+    let value = balance / 10 ** decimals;
+    if (rates.value[`${asset}_USD`]) {
+      value = Number((rates.value[`${asset}_USD`] * value).toFixed(2));
+    }
+
+    data.push({ value, name: assetName });
+  }
+
+  return data;
+}
+
 function addressInfoHandler(result) {
   console.log(result);
   isNewPageLoaded.value = true;
   nextPagesEnded.value = false;
+  paramsForPie.value = [];
 
   if (result.notFound) {
     title.value = "Obyte Explorer";
@@ -62,6 +90,7 @@ function addressInfoHandler(result) {
   }
 
   data.value = result;
+  paramsForPie.value = prepareDataForPieFromBalances(result.objBalances);
   lastRowids.value = {
     lastInputsROWID: result.newLastInputsROWID,
     lastOutputsROWID: result.newLastOutputsROWID,
@@ -134,7 +163,7 @@ watch(filter, () => {
 });
 
 function back() {
-  if (lastUnit) {
+  if (lastUnit.value) {
     return router.push({ path: "/" + lastUnit.value });
   }
 
@@ -156,70 +185,77 @@ function back() {
       </div>
       <div v-else-if="isLoaded">
         <div class="mt-10 font-bold">{{ data.address }}</div>
-        <Collapse
-          class="pt-1.5"
-          v-if="data.definition"
-          :title="t('labelDefinition')"
-          :closed="true"
-        >
-          <Payload>
-            <AddLinksToAddresses :text="safePrettifyJson(JSON.parse(data.definition))" />
-          </Payload>
-        </Collapse>
-        <Collapse
-          class="pt-1.5"
-          v-if="data.objStateVars"
-          :title="t('labelStateVars')"
-          :closed="true"
-        >
-          <StateVars :state-vars="data.objStateVars" :storage-size="data.storage_size" />
-        </Collapse>
-        <collapse
-          class="pt-1.5"
-          v-if="data.arrAasFromTemplate"
-          :title="t('labelAasFromTemplate')"
-          :closed="true"
-        >
-          <ul class="list-disc list-outside ml-10">
-            <li v-for="obj in data.arrAasFromTemplate" :key="obj.address">
-              <Link :type="'address'" :link="obj.address">{{ obj.address }}</Link>
-            </li>
-          </ul>
-        </collapse>
-        <Collapse
-          class="pt-1.5"
-          v-if="data.arrAaResponses"
-          :title="t('labelAaResponses')"
-          :closed="true"
-        >
-          <AAResponses :arr-aa-responses="data.arrAaResponses" />
-        </Collapse>
-        <div class="pt-4 grid gap-1">
-          <div v-for="(value, asset) in data.objBalances" :key="asset" class="flex">
-            <FormatAmount
-              :amount="value.balance"
-              :decimals="value.assetDecimals"
-              :is-asset="true"
-              :rates="false"
-            />
-            <Link :type="'asset'" :link="getAssetName(asset, value.assetName)">
-              {{ getAssetName(asset, value.assetName) }}
-            </Link>
-          </div>
-        </div>
-        <div class="mt-4">
-          <span>{{ t("transactionsInAssets") }}: </span>
-          <select class="select select-bordered select-sm py-0" v-model="filter">
-            <option value="all" :selected="filter === 'all'">{{ t("labelAll") }}</option>
-            <option
-              v-for="(value, asset) in data.objBalances"
-              :key="asset"
-              :value="asset"
-              :selected="filter === asset"
+        <div class="block lg:flex">
+          <div class="flex-auto">
+            <Collapse
+              class="pt-1.5"
+              v-if="data.definition"
+              :title="t('labelDefinition')"
+              :closed="true"
             >
-              {{ value.assetName || asset }}
-            </option>
-          </select>
+              <Payload>
+                <AddLinksToAddresses :text="safePrettifyJson(JSON.parse(data.definition))" />
+              </Payload>
+            </Collapse>
+            <Collapse
+              class="pt-1.5"
+              v-if="data.objStateVars"
+              :title="t('labelStateVars')"
+              :closed="true"
+            >
+              <StateVars :state-vars="data.objStateVars" :storage-size="data.storage_size" />
+            </Collapse>
+            <collapse
+              class="pt-1.5"
+              v-if="data.arrAasFromTemplate"
+              :title="t('labelAasFromTemplate')"
+              :closed="true"
+            >
+              <ul class="list-disc list-outside ml-10">
+                <li v-for="obj in data.arrAasFromTemplate" :key="obj.address">
+                  <Link :type="'address'" :link="obj.address">{{ obj.address }}</Link>
+                </li>
+              </ul>
+            </collapse>
+            <Collapse
+              class="pt-1.5"
+              v-if="data.arrAaResponses"
+              :title="t('labelAaResponses')"
+              :closed="true"
+            >
+              <AAResponses :arr-aa-responses="data.arrAaResponses" />
+            </Collapse>
+            <div class="pt-4 grid gap-1">
+              <div v-for="(value, asset) in data.objBalances" :key="asset" class="flex">
+                <FormatAmount
+                  :amount="value.balance"
+                  :decimals="value.assetDecimals"
+                  :is-asset="true"
+                  :rates="false"
+                />
+                <Link :type="'asset'" :link="getAssetName(asset, value.assetName)">
+                  {{ getAssetName(asset, value.assetName) }}
+                </Link>
+              </div>
+            </div>
+            <div class="mt-4">
+              <span>{{ t("transactionsInAssets") }}: </span>
+              <select class="select select-bordered select-sm py-0" v-model="filter">
+                <option value="all" :selected="filter === 'all'">{{ t("labelAll") }}</option>
+                <option
+                  v-for="(value, asset) in data.objBalances"
+                  :key="asset"
+                  :value="asset"
+                  :selected="filter === asset"
+                >
+                  {{ value.assetName || asset }}
+                </option>
+              </select>
+            </div>
+          </div>
+          <div>
+            <BalancesChart class="h-56 w-56" :data="paramsForPie" name="Balances" />
+          </div>
         </div>
         <UnspentOutputs v-if="view === 'UTXO'" class="mt-4" :unspent="data.unspent" />
         <PaymentList

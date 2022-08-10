@@ -53,7 +53,9 @@ export function prepareData(_data, rates) {
 
     if (!_data.decimals) _data.decimals = 0;
 
-    _data.marketCap = _data.dollarPrice * (_data.supply / 10 ** _data.decimals);
+    _data.supply = _data.supply / 10 ** _data.decimals;
+
+    _data.marketCap = _data.dollarPrice * _data.supply;
   }
 
   return _data;
