@@ -14,6 +14,7 @@ const option = ref({
   tooltip: {
     trigger: "item",
     formatter: "{b} - ${c} ({d}%)",
+    position: "top",
   },
   series: [
     {

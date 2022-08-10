@@ -15,7 +15,8 @@ const chart = ref();
 const option = ref({
   tooltip: {
     trigger: "item",
-    formatter: `{b} - {c} ${props.symbol} ({d}%)`,
+    formatter: `{b}<br />{c} ${props.symbol} ({d}%)`,
+    position: "top",
   },
   series: [
     {

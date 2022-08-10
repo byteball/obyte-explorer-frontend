@@ -64,6 +64,7 @@ onBeforeMount(() => {
 });
 
 watch(width, () => {
+  if (!chart.value) return;
   chart.value.resize();
 });
 

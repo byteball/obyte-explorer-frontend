@@ -253,7 +253,7 @@ function back() {
               </select>
             </div>
           </div>
-          <div>
+          <div class="flex justify-center">
             <BalancesChart class="h-56 w-56" :data="paramsForPie" name="Balances" />
           </div>
         </div>
