@@ -30,9 +30,15 @@ const router = createRouter({
 });
 
 router.beforeEach((to, from, next) => {
-  if (to.name === "asset" && redirectAssetList[to.params.asset]) {
-    const asset = redirectAssetList[to.params.asset];
-    return next({ name: "asset", params: { asset } });
+  if (to.name === "asset") {
+    if (!to.params.asset) {
+      return next({ name: "home" });
+    }
+
+    if (redirectAssetList[to.params.asset]) {
+      const asset = redirectAssetList[to.params.asset];
+      return next({ name: "asset", params: { asset } });
+    }
   }
 
   next();
