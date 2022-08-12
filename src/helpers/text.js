@@ -20,6 +20,10 @@ export function prettifyJson(json_object) {
 }
 
 export function safeJSONParse(text) {
+  if (!isNaN(Number(text))) {
+    return text;
+  }
+
   try {
     return JSON.parse(text);
   } catch (e) {
@@ -34,6 +38,34 @@ export function parseJSONForStateVars(text) {
   }
 
   return v;
+}
+
+export function parseJSONForResponse(value) {
+  if (typeof value === "string") {
+    const result = safeJSONParse(value);
+
+    if (typeof result === "string" || typeof result === "number") {
+      return result;
+    }
+
+    if (Array.isArray(result)) {
+      return result;
+    }
+
+    return parseJSONForResponse(result);
+  }
+
+  if (typeof value === "object") {
+    if (Array.isArray(value)) {
+      return value;
+    }
+
+    for (let key in value) {
+      value[key] = parseJSONForResponse(value[key]);
+    }
+  }
+
+  return value;
 }
 
 export function parseQueryParamsStrToObj(str) {

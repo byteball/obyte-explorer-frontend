@@ -4,7 +4,7 @@ import Link from "../elements/Link.vue";
 import Payload from "../elements/Payload.vue";
 
 import { getDateFromSeconds } from "../../helpers/date";
-import { prettifyJson, safeJSONParse } from "../../helpers/text";
+import { prettifyJson, parseJSONForResponse } from "../../helpers/text";
 
 defineProps(["arrAaResponses"]);
 
@@ -45,7 +45,7 @@ const { t } = useI18n();
         </li>
         <li>
           {{ t("response") }}:
-          <Payload>{{ prettifyJson(safeJSONParse(response.response)) }}</Payload>
+          <Payload>{{ prettifyJson(parseJSONForResponse(response.response)) }}</Payload>
         </li>
       </ul>
     </div>
