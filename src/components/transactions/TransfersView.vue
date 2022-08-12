@@ -44,31 +44,27 @@ defineProps(["listTransactions", "address"]);
               <span class="text-green-500" v-else>in</span>
             </div>
             <div>
-              <div
-                class="truncate w-64 mb-1 pr-2"
-                v-for="(_a, addr) in transactions.to"
-                :key="addr"
-              >
-                <span v-if="addr === address">{{ addr }}</span>
-                <Link v-else :type="'address'" :link="addr">{{ addr }}</Link>
-              </div>
-            </div>
-            <div>
-              <div class="w-52 pl-2 mb-1" v-for="(amount, addr) in transactions.to" :key="addr">
-                <FormatAmount
-                  :decimals="transactions.decimals"
-                  :show-dollar="false"
-                  :amount="amount"
-                  :is-asset="true"
-                />
-                <span v-if="address">
-                  <Link :type="'asset'" :link="transactions.assetName">{{
-                    transactions.assetName
-                  }}</Link>
-                </span>
-                <span v-else>
-                  {{ transactions.assetName }}
-                </span>
+              <div v-for="(amount, addr) in transactions.to" class="flex" :key="addr">
+                <div class="truncate mb-1 w-64 pr-2 flex-none">
+                  <span v-if="addr === address">{{ addr }}</span>
+                  <Link v-else :type="'address'" :link="addr">{{ addr }}</Link>
+                </div>
+                <div class="w-full pl-2 mb-1">
+                  <FormatAmount
+                    :decimals="transactions.decimals"
+                    :show-dollar="false"
+                    :amount="amount"
+                    :is-asset="true"
+                  />
+                  <span v-if="address">
+                    <Link :type="'asset'" :link="transactions.assetName">{{
+                      transactions.assetName
+                    }}</Link>
+                  </span>
+                  <span v-else>
+                    {{ transactions.assetName }}
+                  </span>
+                </div>
               </div>
             </div>
           </div>
