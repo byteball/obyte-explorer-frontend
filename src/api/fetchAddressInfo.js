@@ -22,7 +22,7 @@ export default async function fetchAddressInfo(socket, address, params) {
       socket.emit(EventNames.GetAddressData, params, resolve);
     });
   } else {
-    const { data } = await axios.get(`${import.meta.env.VITE_API_URL}/address/${address}/${type}`, {
+    const { data } = await axios.get(`/api/address/${address}/${type}`, {
       params,
     });
     return data;

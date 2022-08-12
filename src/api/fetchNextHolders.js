@@ -12,12 +12,9 @@ export default async function fetchNextHolders(socket, asset, params) {
       socket.emit(EventNames.LoadNextPageAssetHolders, params, resolve);
     });
   } else {
-    const { data } = await axios.get(
-      `${import.meta.env.VITE_API_URL}/asset/${asset}/next_page_holders`,
-      {
-        params,
-      }
-    );
+    const { data } = await axios.get(`/api/asset/${asset}/next_page_holders`, {
+      params,
+    });
     return data;
   }
 }

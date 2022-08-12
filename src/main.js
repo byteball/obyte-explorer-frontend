@@ -31,9 +31,7 @@ const i18n = createI18n({
 
 app.use(createPinia());
 app.use(router);
-app.use(socketIoPlugin, {
-  url: import.meta.env.VITE_API_URL,
-});
+app.use(socketIoPlugin);
 app.use(autoAnimatePlugin);
 app.use(head);
 app.use(i18n);

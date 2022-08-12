@@ -11,9 +11,7 @@ export default async function fetchUnitInfo(socket, unit) {
       socket.emit(EventNames.Info, unit, resolve);
     });
   } else {
-    const { data } = await axios.get(
-      `${import.meta.env.VITE_API_URL}/unit/${encodeURIComponent(unit)}`
-    );
+    const { data } = await axios.get(`/api/unit/${encodeURIComponent(unit)}`);
     return data;
   }
 }

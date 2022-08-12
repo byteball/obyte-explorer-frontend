@@ -21,7 +21,7 @@ export default async function fetchAssetInfo(socket, asset, nextPageParams) {
       socket.emit(EventNames.GetAssetData, { asset }, resolve);
     });
   } else {
-    const { data } = await axios.get(`${import.meta.env.VITE_API_URL}/asset/${asset}/${type}`, {
+    const { data } = await axios.get(`/api/asset/${asset}/${type}`, {
       params: { ...nextPageParams },
     });
     return data;

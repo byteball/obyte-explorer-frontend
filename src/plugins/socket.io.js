@@ -4,14 +4,11 @@ import { useAssetNamesStore } from "../stores/assetNames";
 import { useGlobalStateStore } from "../stores/globalState";
 
 export const socketIoPlugin = {
-  install: (app, options) => {
-    if (!options.url) {
-      throw new Error("Please set VITE_API_URL");
-    }
+  install: (app) => {
     const ratesStore = useRatesStore();
     const assetNamesStore = useAssetNamesStore();
     const globalStateStore = useGlobalStateStore();
-    const socket = io(options.url);
+    const socket = io();
 
     socket.on("connect", () => {
       globalStateStore.setWSConnected(true);
