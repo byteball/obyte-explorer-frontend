@@ -12,7 +12,7 @@ const { t } = useI18n();
 </script>
 
 <template>
-  <div v-for="response in arrAaResponses" :key="response.mci">
+  <div v-for="response in arrAaResponses" :key="response.mci" style="max-width: 750px">
     <div class="flex bg-gray-100 p-2">
       <div class="flex-1 font-bold">
         <div v-if="response.trigger_unit">
