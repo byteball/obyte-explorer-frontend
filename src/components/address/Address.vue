@@ -161,6 +161,12 @@ watch(filter, () => {
   }
 });
 
+watch(rates, () => {
+  if (data.value) {
+    paramsForPie.value = prepareDataForPieFromBalances(data.value.objBalances);
+  }
+});
+
 function back() {
   if (lastUnit.value) {
     return router.push({ path: "/" + lastUnit.value });
@@ -254,7 +260,12 @@ function back() {
             <UnspentOutputs v-if="view === 'UTXO'" class="mt-4" :unspent="data.unspent" />
           </div>
           <div class="flex justify-center">
-            <BalancesChart class="h-80 w-80" :data="paramsForPie" name="Balances" />
+            <BalancesChart
+              v-if="paramsForPie.length"
+              class="h-80 w-80"
+              :data="paramsForPie"
+              name="Balances"
+            />
           </div>
         </div>
         <PaymentList
