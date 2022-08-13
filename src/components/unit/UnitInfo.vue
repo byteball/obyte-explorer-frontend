@@ -28,6 +28,7 @@ const title = ref("Obyte Explorer");
 useHead({ title });
 
 watch(info, () => {
+  console.log(info.value);
   isHidden.value = false;
 });
 
@@ -105,7 +106,10 @@ function hide() {
         <Collapse :title="t('parents')"
           ><ListLinks :links="info.parents" :type="'unit'"
         /></Collapse>
-        <Collapse :title="t('messages')">
+        <Collapse :title="t('triggerUnitID')" v-if="info.trigger_unit">
+          <Link :type="'unit'" :link="info.trigger_unit">{{ info.trigger_unit }}</Link>
+        </Collapse>
+        <Collapse :title="t('messages')" class="pt-2">
           <Messages />
         </Collapse>
         <Collapse
