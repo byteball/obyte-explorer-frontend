@@ -112,7 +112,7 @@ function hide() {
           class="pt-1.5"
           v-if="info.arrAaResponses"
           :title="t('aaResponses')"
-          :closed="true"
+          :closed="false"
         >
           <AAResponses :arr-aa-responses="info.arrAaResponses" />
         </Collapse>
