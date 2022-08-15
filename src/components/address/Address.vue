@@ -55,7 +55,9 @@ const { y } = useWindowScroll();
 useHead({ title });
 
 function prepareDataForPieFromBalances(balances) {
-  const data = [];
+  let data = [];
+  let bytes = null;
+
   for (let asset in balances) {
     const balance = balances[asset].balance;
     let decimals = balances[asset].assetDecimals || 0;
@@ -69,8 +71,21 @@ function prepareDataForPieFromBalances(balances) {
     let value = balance / 10 ** decimals;
     value = Number((rates.value[`${asset}_USD`] * value).toFixed(2));
 
+    if (asset === "GBYTE") {
+      bytes = { value, name: assetName };
+      continue;
+    }
     data.push({ value, name: assetName });
   }
+
+  data.sort((a, b) => {
+    return b.value - a.value;
+  });
+
+  if (!bytes) {
+    bytes = { value: 0, assetName: "GBYTE" };
+  }
+  data = [bytes, ...data];
 
   return data;
 }
