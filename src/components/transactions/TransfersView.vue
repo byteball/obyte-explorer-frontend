@@ -49,7 +49,7 @@ defineProps(["listTransactions", "address"]);
                   <span v-if="addr === address">{{ addr }}</span>
                   <Link v-else :type="'address'" :link="addr">{{ addr }}</Link>
                 </div>
-                <div class="w-full pl-2 mb-1">
+                <div class="w-full pl-2 mb-1 min-w-max">
                   <FormatAmount
                     :decimals="transactions.decimals"
                     :show-dollar="false"
