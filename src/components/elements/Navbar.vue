@@ -117,10 +117,6 @@ function searchFocused() {
 function searchBlur() {
   globalState.setSearchInputFocused(false);
 }
-
-function goTo(name) {
-  router.push({ name });
-}
 </script>
 
 <template>
@@ -129,9 +125,13 @@ function goTo(name) {
     style="z-index: 1200"
   >
     <div class="grid sm:flex flex-1">
-      <a @click="goTo('home')" class="btn btn-ghost normal-case text-xl !bg-white !pl-0 !pr-2">
+      <router-link
+        to="/"
+        class="btn btn-ghost normal-case text-xl !bg-white !pl-0 !pr-2"
+        title="Home page"
+      >
         <ObyteLogo class="h-10" />
-      </a>
+      </router-link>
       <div class="relative form-control w-3/6 max-w-xs" style="padding-top: 1px">
         <input
           type="text"

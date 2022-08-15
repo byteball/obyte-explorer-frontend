@@ -8,8 +8,6 @@
     xmlns:xlink="http://www.w3.org/1999/xlink"
   >
     <!-- Generator: sketchtool 61.2 (101010) - https://sketch.com -->
-    <title>7E100C8A-561A-464F-9B72-355592CB044A</title>
-    <desc>Created with sketchtool.</desc>
     <g id="Obyte" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
       <g id="Main-page-(Desktop)" transform="translate(-159.000000, -20.000000)" fill="#456C91">
         <g id="obyte-logo" transform="translate(159.000000, 19.000000)">

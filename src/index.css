@@ -33,3 +33,9 @@
   z-index: 1100 !important;
   position: absolute !important;
 }
+
+.tooltip {
+  font-weight: 400 !important;
+  font-size: 14px !important;
+  text-transform: none;
+}
