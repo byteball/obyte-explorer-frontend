@@ -8,6 +8,7 @@ import { getAssetName } from "../../helpers/asset";
 import { prepareParamsForAddress } from "../../helpers/address";
 import { useHead } from "@vueuse/head";
 import { useI18n } from "vue-i18n";
+import { desc } from "../../configs/meta";
 
 import Collapse from "../elements/Collapse.vue";
 import Payload from "../elements/Payload.vue";
@@ -46,13 +47,22 @@ const nextPagesEnded = ref(false);
 const filter = ref("all");
 const PL = ref(null);
 const el = ref(null);
-const title = ref("Obyte Explorer");
 const paramsForPie = ref([]);
 
 const { height: wHeigth } = useWindowSize();
 const { height } = useElementSize(el);
 const { y } = useWindowScroll();
-useHead({ title });
+
+const title = ref("Obyte Explorer");
+useHead({
+  title,
+  meta: [
+    {
+      property: "og:description",
+      content: `Address "${route.params.address}" | ${desc}`,
+    },
+  ],
+});
 
 function prepareDataForPieFromBalances(balances) {
   let data = [];

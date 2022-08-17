@@ -1,11 +1,12 @@
 <script setup>
-import { ref, watch, inject } from "vue";
+import { ref, watch, inject, computed } from "vue";
 import { storeToRefs } from "pinia";
 import { useRouter, useRoute } from "vue-router";
 import { useI18n } from "vue-i18n";
 import { useElementSize, useWindowScroll, useWindowSize } from "@vueuse/core/index";
 import { prepareData } from "../../helpers/asset";
 import { useHead } from "@vueuse/head";
+import { desc } from "../../configs/meta";
 
 import PaymentList from "../transactions/PaymentList.vue";
 import FormatAmount from "../FormatAmount.vue";
@@ -37,12 +38,20 @@ const isNewPageLoaded = ref(true);
 const nextPagesEnded = ref(false);
 const PL = ref(null);
 const el = ref(null);
-const title = ref("Obyte Explorer");
 
 const { height: wHeigth } = useWindowSize();
 const { height } = useElementSize(el);
 const { y } = useWindowScroll();
-useHead({ title });
+
+const title = ref("Obyte Explorer");
+const assetName = ref(route.params.asset);
+const meta = computed(() => [
+  {
+    property: "og:description",
+    content: `Asset "${assetName.value}" | ${desc}`,
+  },
+]);
+useHead({ title, meta });
 
 function assetInfoHandler(_data) {
   isNewPageLoaded.value = true;
@@ -50,6 +59,7 @@ function assetInfoHandler(_data) {
 
   if (_data.notFound) {
     title.value = "Obyte Explorer";
+    assetName.value = route.params.asset;
     notFound.value = true;
     isLoaded.value = true;
     return;
@@ -59,6 +69,8 @@ function assetInfoHandler(_data) {
   isLoaded.value = true;
   isLoaded.value = true;
   title.value = `Obyte Explorer - ${_data.name}`;
+  console.log(_data);
+  assetName.value = _data.name;
   if (data.value.isPrivate) {
     isNewPageLoaded.value = false;
     return;
