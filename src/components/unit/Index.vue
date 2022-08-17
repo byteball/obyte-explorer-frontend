@@ -36,14 +36,23 @@ const { searchInputFocused } = storeToRefs(globalState);
 const { info } = storeToRefs(infoStore);
 
 const socket = inject("socket.io");
+const title = computed(() => {
+  return `${
+    route.params.unit ? `Unit ${route.params.unit} details on Obyte DAG chain | ` : ""
+  }${desc}`;
+});
 const meta = computed(() => [
   {
+    property: "og:title",
+    content: title.value,
+  },
+  {
     property: "og:description",
-    content: `${route.params.unit ? `Unit "${route.params.unit}" | ` : ""}${desc}`,
+    content: title.value,
   },
 ]);
 useHead({
-  title: "Obyte explorer",
+  title,
   meta,
 });
 

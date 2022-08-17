@@ -43,22 +43,33 @@ const { height: wHeigth } = useWindowSize();
 const { height } = useElementSize(el);
 const { y } = useWindowScroll();
 
-const title = ref("Obyte Explorer");
 const assetName = ref(route.params.asset);
+
+const title = computed(() => {
+  return `${
+    !notFound.value && data.value.name ? `Token ${data.value.name} transactions and holders | ` : ""
+  }${desc}`;
+});
 const meta = computed(() => [
   {
+    property: "og:title",
+    content: title.value,
+  },
+  {
     property: "og:description",
-    content: `Asset "${assetName.value}" | ${desc}`,
+    content: title.value,
   },
 ]);
-useHead({ title, meta });
+useHead({
+  title,
+  meta,
+});
 
 function assetInfoHandler(_data) {
   isNewPageLoaded.value = true;
   nextPagesEnded.value = false;
 
   if (_data.notFound) {
-    title.value = "Obyte Explorer";
     assetName.value = route.params.asset;
     notFound.value = true;
     isLoaded.value = true;
@@ -68,7 +79,6 @@ function assetInfoHandler(_data) {
   data.value = prepareData(_data, rates);
   isLoaded.value = true;
   isLoaded.value = true;
-  title.value = `Obyte Explorer - ${_data.name}`;
   console.log(_data);
   assetName.value = _data.name;
   if (data.value.isPrivate) {

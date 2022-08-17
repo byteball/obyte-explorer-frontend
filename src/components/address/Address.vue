@@ -1,5 +1,5 @@
 <script setup>
-import { ref, watch, inject } from "vue";
+import { ref, watch, inject, computed } from "vue";
 import { storeToRefs } from "pinia";
 import { useRoute, useRouter } from "vue-router";
 import { useWindowScroll, useElementSize, useWindowSize } from "@vueuse/core";
@@ -53,15 +53,26 @@ const { height: wHeigth } = useWindowSize();
 const { height } = useElementSize(el);
 const { y } = useWindowScroll();
 
-const title = ref("Obyte Explorer");
+const title = computed(() => {
+  return `${
+    !notFound.value && data.value.address
+      ? `Address ${data.value.address} transactions and portfolio | `
+      : ""
+  }${desc}`;
+});
+const meta = computed(() => [
+  {
+    property: "og:title",
+    content: title.value,
+  },
+  {
+    property: "og:description",
+    content: title.value,
+  },
+]);
 useHead({
   title,
-  meta: [
-    {
-      property: "og:description",
-      content: `Address "${route.params.address}" | ${desc}`,
-    },
-  ],
+  meta,
 });
 
 function prepareDataForPieFromBalances(balances) {
@@ -106,13 +117,11 @@ function prepareDataForPieFromBalances(balances) {
 }
 
 function addressInfoHandler(result) {
-  console.log(result);
   isNewPageLoaded.value = true;
   nextPagesEnded.value = false;
   paramsForPie.value = [];
 
   if (result.notFound) {
-    title.value = "Obyte Explorer";
     notFound.value = true;
     isLoaded.value = true;
     return;
@@ -126,7 +135,6 @@ function addressInfoHandler(result) {
   };
   notFound.value = false;
   isLoaded.value = true;
-  title.value = `Obyte Explorer - ${result.address}`;
 }
 
 function nextPageHandler(data) {
