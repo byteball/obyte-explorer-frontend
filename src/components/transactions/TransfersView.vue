@@ -22,7 +22,7 @@ defineProps(["listTransactions", "address"]);
         <div
           v-for="(transactionsGroupByAsset, unit) in t.transactionList"
           :key="unit"
-          class="border-b"
+          class="border-b flex flex-col"
         >
           <div
             v-for="(transactions, index) in transactionsGroupByAsset"
