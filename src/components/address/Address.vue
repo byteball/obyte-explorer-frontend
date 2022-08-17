@@ -58,6 +58,8 @@ function prepareDataForPieFromBalances(balances) {
   let data = [];
   let bytes = null;
 
+  if (!Object.keys(rates.value).length) return [];
+
   for (let asset in balances) {
     const balance = balances[asset].balance;
     let decimals = balances[asset].assetDecimals || 0;
@@ -72,7 +74,7 @@ function prepareDataForPieFromBalances(balances) {
     value = Number((rates.value[`${asset}_USD`] * value).toFixed(2));
 
     if (asset === "GBYTE") {
-      bytes = { value, name: assetName };
+      bytes = { value, name: "GBYTE" };
       continue;
     }
     data.push({ value, name: assetName });
@@ -82,10 +84,13 @@ function prepareDataForPieFromBalances(balances) {
     return b.value - a.value;
   });
 
-  if (!bytes) {
+  if (!bytes && data.length) {
     bytes = { value: 0, assetName: "GBYTE" };
   }
-  data = [bytes, ...data];
+
+  if (bytes) {
+    data = [bytes, ...data];
+  }
 
   return data;
 }

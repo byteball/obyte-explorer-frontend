@@ -18,7 +18,7 @@ defineProps(["listTransactions", "address"]);
       <div class="w-52 pr-2 pl-3">Amount</div>
     </div>
     <transition-group name="list" tag="div">
-      <div class="min-w-[1200px]" v-for="t in listTransactions" :key="t.rowid">
+      <div class="min-w-max" v-for="t in listTransactions" :key="t.rowid">
         <div
           v-for="(transactionsGroupByAsset, unit) in t.transactionList"
           :key="unit"
