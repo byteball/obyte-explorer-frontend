@@ -3,7 +3,6 @@ import { createPinia } from "pinia";
 import { autoAnimatePlugin } from "@formkit/auto-animate/vue";
 import { createHead } from "@vueuse/head";
 import { createI18n } from "vue-i18n";
-import { desc } from "./configs/meta";
 
 import App from "./App.vue";
 import router from "./router";
@@ -29,8 +28,6 @@ const i18n = createI18n({
   fallbackLocale: "en",
   messages,
 });
-
-document.querySelector('meta[name="description"]').setAttribute("content", desc);
 
 app.use(createPinia());
 app.use(router);

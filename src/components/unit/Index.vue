@@ -41,19 +41,8 @@ const title = computed(() => {
     route.params.unit ? `Unit ${route.params.unit} details on Obyte DAG chain | ` : ""
   }${desc}`;
 });
-const meta = computed(() => [
-  {
-    property: "og:title",
-    content: title.value,
-  },
-  {
-    property: "og:description",
-    content: title.value,
-  },
-]);
 useHead({
   title,
-  meta,
 });
 
 function updDag(data) {

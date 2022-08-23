@@ -60,19 +60,8 @@ const title = computed(() => {
       : ""
   }${desc}`;
 });
-const meta = computed(() => [
-  {
-    property: "og:title",
-    content: title.value,
-  },
-  {
-    property: "og:description",
-    content: title.value,
-  },
-]);
 useHead({
   title,
-  meta,
 });
 
 function prepareDataForPieFromBalances(balances) {

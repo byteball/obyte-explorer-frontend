@@ -1,9 +1,8 @@
 <script setup>
-import { onMounted, ref, watch } from "vue";
+import { ref, watch } from "vue";
 import { storeToRefs } from "pinia";
 import { getDateFromSeconds, getDurationFromSeconds } from "../../helpers/date";
 import { prettifyJson } from "../../helpers/text";
-import { useHead } from "@vueuse/head";
 import { useI18n } from "vue-i18n";
 
 import Collapse from "../elements/Collapse.vue";
@@ -24,26 +23,10 @@ const { rates } = storeToRefs(useRatesStore());
 const { t } = useI18n();
 
 const isHidden = ref(false);
-const title = ref("Obyte Explorer");
-useHead({ title });
 
 watch(info, () => {
   console.log(info.value);
   isHidden.value = false;
-});
-
-watch(isReady, () => {
-  let t = "Obyte Explorer";
-  if (isReady.value) {
-    t += ` - ${info.value.unit}`;
-  }
-  title.value = t;
-});
-
-onMounted(() => {
-  if (isReady.value) {
-    title.value = `Obyte Explorer - ${info.value.unit}`;
-  }
 });
 
 function hide() {
