@@ -1,9 +1,11 @@
 <script setup>
-import { inject, onMounted, onUnmounted, watch } from "vue";
+import { computed, inject, onMounted, onUnmounted, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { storeToRefs } from "pinia";
+import { useHead } from "@vueuse/head";
 import { ArrowCircleUpIcon } from "@heroicons/vue/outline";
 import { EventNames } from "../../enum/eventEnums";
+import { desc } from "../../configs/meta";
 
 import {
   highlightNode,
@@ -34,6 +36,25 @@ const { searchInputFocused } = storeToRefs(globalState);
 const { info } = storeToRefs(infoStore);
 
 const socket = inject("socket.io");
+const title = computed(() => {
+  return `${
+    route.params.unit ? `Unit ${route.params.unit} details on Obyte DAG chain | ` : ""
+  }${desc}`;
+});
+const meta = computed(() => [
+  {
+    property: "og:title",
+    content: title.value,
+  },
+  {
+    property: "og:description",
+    content: title.value,
+  },
+]);
+useHead({
+  title,
+  meta,
+});
 
 function updDag(data) {
   updDagHandler(data);
