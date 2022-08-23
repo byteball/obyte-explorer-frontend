@@ -1,14 +1,12 @@
 <script setup>
-import { ref, watch, inject, computed } from "vue";
+import { ref, watch, inject } from "vue";
 import { storeToRefs } from "pinia";
 import { useRoute, useRouter } from "vue-router";
 import { useWindowScroll, useElementSize, useWindowSize } from "@vueuse/core";
 import { safePrettifyJson } from "../../helpers/text";
 import { getAssetName } from "../../helpers/asset";
 import { prepareParamsForAddress } from "../../helpers/address";
-import { useHead } from "@vueuse/head";
 import { useI18n } from "vue-i18n";
-import { desc } from "../../configs/meta";
 
 import Collapse from "../elements/Collapse.vue";
 import Payload from "../elements/Payload.vue";
@@ -52,28 +50,6 @@ const paramsForPie = ref([]);
 const { height: wHeigth } = useWindowSize();
 const { height } = useElementSize(el);
 const { y } = useWindowScroll();
-
-const title = computed(() => {
-  return `${
-    !notFound.value && data.value.address
-      ? `Address ${data.value.address} transactions and portfolio | `
-      : ""
-  }${desc}`;
-});
-const meta = computed(() => [
-  {
-    property: "og:title",
-    content: title.value,
-  },
-  {
-    property: "og:description",
-    content: title.value,
-  },
-]);
-useHead({
-  title,
-  meta,
-});
 
 function prepareDataForPieFromBalances(balances) {
   let data = [];

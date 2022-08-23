@@ -1,12 +1,10 @@
 <script setup>
-import { ref, watch, inject, computed } from "vue";
+import { ref, watch, inject } from "vue";
 import { storeToRefs } from "pinia";
 import { useRouter, useRoute } from "vue-router";
 import { useI18n } from "vue-i18n";
 import { useElementSize, useWindowScroll, useWindowSize } from "@vueuse/core/index";
 import { prepareData } from "../../helpers/asset";
-import { useHead } from "@vueuse/head";
-import { desc } from "../../configs/meta";
 
 import PaymentList from "../transactions/PaymentList.vue";
 import FormatAmount from "../FormatAmount.vue";
@@ -44,26 +42,6 @@ const { height } = useElementSize(el);
 const { y } = useWindowScroll();
 
 const assetName = ref(route.params.asset);
-
-const title = computed(() => {
-  return `${
-    !notFound.value && data.value.name ? `Token ${data.value.name} transactions and holders | ` : ""
-  }${desc}`;
-});
-const meta = computed(() => [
-  {
-    property: "og:title",
-    content: title.value,
-  },
-  {
-    property: "og:description",
-    content: title.value,
-  },
-]);
-useHead({
-  title,
-  meta,
-});
 
 function assetInfoHandler(_data) {
   isNewPageLoaded.value = true;
