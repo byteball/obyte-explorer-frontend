@@ -133,15 +133,36 @@ function searchBlur() {
         <ObyteLogo class="h-10" />
       </router-link>
       <div class="relative form-control w-3/6 max-w-xs" style="padding-top: 1px">
-        <input
-          type="text"
-          id="searchInput"
-          ref="SI"
-          v-model="searchValue"
-          @focus="searchFocused"
-          @blur="searchBlur"
-          class="input input-ghost w-full max-w-xs text-base pr-2.5 hover:outline-0 focus:outline-0"
-        />
+        <div class="input-group">
+          <input
+            type="text"
+            id="searchInput"
+            ref="SI"
+            v-model="searchValue"
+            @focus="searchFocused"
+            @blur="searchBlur"
+            class="input input-ghost w-full max-w-xs text-base pr-2.5 hover:outline-0 focus:outline-0"
+          />
+          <button
+            class="btn btn-square bg-blue-500 border-blue-500 hover:bg-blue-600 hover:border-blue-600 text-white btn-sm w-10 h-10"
+            @click="searchEventHandler"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-5 w-5"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+              />
+            </svg>
+          </button>
+        </div>
       </div>
     </div>
     <div class="flex-none gap-2">
