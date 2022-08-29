@@ -144,7 +144,7 @@ function searchBlur() {
             class="input input-ghost w-full max-w-xs text-base pr-2.5 hover:outline-0 focus:outline-0"
           />
           <button
-            class="btn btn-square btn-ghost text-blue-500 btn-sm w-10 h-10"
+            class="btn btn-square btn-ghost text-gray-500 btn-sm w-10 h-10"
             style="border: 1px solid rgba(33, 33, 33, 0.2); border-left: none"
             @click="searchEventHandler"
           >
