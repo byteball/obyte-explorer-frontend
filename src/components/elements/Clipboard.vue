@@ -26,7 +26,7 @@ function write() {
 </script>
 
 <template>
-  <div @click="write">
+  <div @click="write" :class="{ tooltip: waiting }" data-tip="Copy to clipboard">
     <label class="swap swap-rotate" :class="{ 'swap-active': waiting, 'cursor-default': !waiting }">
       <DocumentDuplicateIcon class="swap-on text-blue-500 w-5" />
       <CheckIcon class="swap-off w-5 text-green-500" />
