@@ -36,7 +36,7 @@ function hide() {
 
 <template>
   <div
-    class="p-2 w-full xl:w-[34%] xl:block top-32 sm:top-24 lg:top-16 overscroll-x-none"
+    class="p-2 w-full xl:w-[34%] xl:block top-32 sm:top-24 lg:top-16"
     id="info"
     :class="{ hidden: isHidden || !info.unit }"
   >
@@ -45,7 +45,7 @@ function hide() {
       <div v-if="info.deleted" class="text-center font-bold">
         {{ t("infoMessageUnitNotFound") }}
       </div>
-      <div v-if="info.unit" :key="info.unit" class="grid gap-y-3 text-sm md:text-base">
+      <div v-if="info.unit" :key="info.unit" class="grid gap-y-3 text-xs sm:text-sm md:text-base">
         <div class="text-right py-2 px-4 xl:hidden">
           <a class="link link-hover text-blue-500" @click="hide">{{ t("closeButton") }}</a>
         </div>
