@@ -204,9 +204,9 @@ function back() {
 </script>
 
 <template>
-  <div class="w-full bg-white absolute h-full p-4" style="z-index: 1100">
+  <div class="w-full bg-white absolute h-full p-1 sm:p-4 pt-4" style="z-index: 1100">
     <div class="max-w-6xl mx-auto w-full text-sm md:text-base" ref="el">
-      <div class="text-right">
+      <div class="text-right pr-4">
         <a @click="back" class="link link-hover text-blue-500">{{ t("closeButton") }}</a>
       </div>
       <div v-if="!isLoaded" class="text-center">

@@ -66,7 +66,7 @@ onMounted(() => {
     <span class="text-xs ml-2">{{ t("tooManyVars") }}</span>
   </div>
 
-  <ul class="list-disc list-outside ml-10">
+  <ul class="list-disc list-outside ml-5 sm:ml-10">
     <li v-for="v in vars" :key="v.key">
       <span>{{ v.key }}: </span>
       <div v-if="v.type === 'json'">

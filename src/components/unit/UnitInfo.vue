@@ -36,7 +36,7 @@ function hide() {
 
 <template>
   <div
-    class="p-2 w-full xl:w-[34%] xl:block top-32 sm:top-24 lg:top-16"
+    class="p-1 sm:p-2 w-full xl:w-[34%] xl:block top-32 sm:top-24 lg:top-16"
     id="info"
     :class="{ hidden: isHidden || !info.unit }"
   >
@@ -45,13 +45,13 @@ function hide() {
       <div v-if="info.deleted" class="text-center font-bold">
         {{ t("infoMessageUnitNotFound") }}
       </div>
-      <div v-if="info.unit" :key="info.unit" class="grid gap-y-3 text-xs sm:text-sm md:text-base">
+      <div v-if="info.unit" :key="info.unit" class="grid gap-y-3 text-sm md:text-base">
         <div class="text-right py-2 px-4 xl:hidden">
           <a class="link link-hover text-blue-500" @click="hide">{{ t("closeButton") }}</a>
         </div>
         <div>
           <div class="text-sm text-gray-600">{{ t("unitID") }}</div>
-          <div class="flex items-center">
+          <div class="flex items-center text-xs sm:text-sm">
             {{ info.unit }}
             <Clipboard class="h-5 ml-1" style="padding-top: 1px" :text="info.unit" />
           </div>
@@ -85,11 +85,13 @@ function hide() {
             >
           </div>
         </Collapse>
-        <Collapse :title="t('children')"><ListLinks :links="info.child" :type="'unit'" /></Collapse>
-        <Collapse :title="t('parents')"
+        <Collapse :title="t('children')" class="text-xs sm:text-sm"
+          ><ListLinks :links="info.child" :type="'unit'"
+        /></Collapse>
+        <Collapse :title="t('parents')" class="text-xs sm:text-sm"
           ><ListLinks :links="info.parents" :type="'unit'"
         /></Collapse>
-        <Collapse :title="t('triggerUnitID')" v-if="info.trigger_unit">
+        <Collapse :title="t('triggerUnitID')" class="text-xs sm:text-sm" v-if="info.trigger_unit">
           <Link :type="'unit'" :link="info.trigger_unit">{{ info.trigger_unit }}</Link>
         </Collapse>
         <Collapse :title="t('messages')" class="pt-2">
@@ -121,7 +123,11 @@ function hide() {
           <TIElement :title="t('labelWitnessedLevel')">
             {{ info.witnessed_level }}
           </TIElement>
-          <TIElement v-if="info.last_ball_unit" :title="t('labelLastBallUnit')">
+          <TIElement
+            v-if="info.last_ball_unit"
+            :title="t('labelLastBallUnit')"
+            class="text-xs sm:text-sm"
+          >
             <Link :link="info.last_ball_unit" class="block sm:inline-block" :type="'unit'">{{
               info.last_ball_unit
             }}</Link>
