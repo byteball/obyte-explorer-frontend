@@ -45,13 +45,13 @@ function hide() {
       <div v-if="info.deleted" class="text-center font-bold">
         {{ t("infoMessageUnitNotFound") }}
       </div>
-      <div v-if="info.unit" :key="info.unit" class="grid gap-y-3 text-sm md:text-base">
+      <div v-if="info.unit" :key="info.unit" class="grid gap-y-3 text-xs sm:text-sm md:text-base">
         <div class="text-right py-2 px-4 xl:hidden">
           <a class="link link-hover text-blue-500" @click="hide">{{ t("closeButton") }}</a>
         </div>
         <div>
-          <div class="text-xs sm:text-sm text-gray-600">{{ t("unitID") }}</div>
-          <div class="flex items-center text-xs sm:text-sm">
+          <div class="text-sm text-gray-600">{{ t("unitID") }}</div>
+          <div class="flex items-center">
             {{ info.unit }}
             <Clipboard class="h-5 ml-1" style="padding-top: 1px" :text="info.unit" />
           </div>
