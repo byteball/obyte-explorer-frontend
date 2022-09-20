@@ -17,9 +17,11 @@ const { t } = useI18n();
       <div class="flex-1 sm:font-bold">
         <div v-if="response.trigger_unit">
           {{ t("triggerUnitID") }}:
-          <Link :type="'unit'" :link="response.trigger_unit" class="text-xs sm:text-sm">{{
-            response.trigger_unit
-          }}</Link>
+          <div class="grid sm:inline">
+            <Link :type="'unit'" :link="response.trigger_unit" class="truncate max-w-95">{{
+              response.trigger_unit
+            }}</Link>
+          </div>
         </div>
         <div v-else>{{ t("from") }} {{ response.aa_address }}</div>
       </div>
@@ -32,9 +34,12 @@ const { t } = useI18n();
         <li>
           <div v-if="response.trigger_address">
             {{ t("triggerAddress") }}:
-            <Link :type="'address'" :link="response.trigger_address">{{
-              response.trigger_address
-            }}</Link>
+            <Link
+              :type="'address'"
+              :link="response.trigger_address"
+              class="block sm:inline-block"
+              >{{ response.trigger_address }}</Link
+            >
           </div>
           <div v-else>
             {{ t("aaAdress") }}:
@@ -45,9 +50,11 @@ const { t } = useI18n();
         <li>{{ response.bounced ? t("bounced") : t("notBounced") }}</li>
         <li v-if="response.response_unit">
           {{ t("responseUnit") }}:
-          <Link :type="'unit'" :link="response.response_unit" class="text-xs sm:text-sm">{{
-            response.response_unit
-          }}</Link>
+          <div class="grid sm:inline">
+            <Link :type="'unit'" :link="response.response_unit" class="truncate max-w-95">{{
+              response.response_unit
+            }}</Link>
+          </div>
         </li>
         <li>
           {{ t("response") }}:

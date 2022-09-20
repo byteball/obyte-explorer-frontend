@@ -4,6 +4,7 @@ import { storeToRefs } from "pinia";
 import { getDateFromSeconds, getDurationFromSeconds } from "../../helpers/date";
 import { prettifyJson } from "../../helpers/text";
 import { useI18n } from "vue-i18n";
+import { useWindowSize } from "@vueuse/core";
 
 import Collapse from "../elements/Collapse.vue";
 import ListLinks from "../elements/ListLinks.vue";
@@ -21,13 +22,25 @@ const { info, isReady } = storeToRefs(useInfoStore());
 const { rates } = storeToRefs(useRatesStore());
 
 const { t } = useI18n();
+const { width } = useWindowSize();
 
 const isHidden = ref(false);
+const maxWidth = ref("auto");
 
 watch(info, () => {
   console.log(info.value);
   isHidden.value = false;
 });
+
+watch(
+  width,
+  () => {
+    maxWidth.value = width.value - 40 + "px";
+  },
+  {
+    immediate: true,
+  }
+);
 
 function hide() {
   isHidden.value = true;
@@ -36,12 +49,12 @@ function hide() {
 
 <template>
   <div
-    class="p-1 sm:p-2 w-full xl:w-[34%] xl:block top-32 sm:top-24 lg:top-16"
+    class="w-full xl:w-[34%] xl:block top-32 sm:top-24 lg:top-16 !border-0 sm:!border"
     id="info"
     :class="{ hidden: isHidden || !info.unit }"
   >
     <div v-if="!isReady" class="text-center">{{ t("selectUnit") }}</div>
-    <div v-if="isReady">
+    <div v-if="isReady" class="p-1 sm:p-2">
       <div v-if="info.deleted" class="text-center font-bold">
         {{ t("infoMessageUnitNotFound") }}
       </div>
@@ -51,9 +64,11 @@ function hide() {
         </div>
         <div>
           <div class="text-sm text-gray-600">{{ t("unitID") }}</div>
-          <div class="flex items-center text-xs sm:text-sm">
-            {{ info.unit }}
-            <Clipboard class="h-5 ml-1" style="padding-top: 1px" :text="info.unit" />
+          <div class="text-sm">
+            <div class="flex flex-wrap">
+              <div class="truncate" :style="{ maxWidth }">{{ info.unit }}</div>
+              <Clipboard class="h-5 ml-1" style="padding-top: 1px" :text="info.unit" />
+            </div>
           </div>
         </div>
         <div>
@@ -85,14 +100,16 @@ function hide() {
             >
           </div>
         </Collapse>
-        <Collapse :title="t('children')" class="text-xs sm:text-sm"
-          ><ListLinks :links="info.child" :type="'unit'"
-        /></Collapse>
-        <Collapse :title="t('parents')" class="text-xs sm:text-sm"
+        <Collapse :title="t('children')"><ListLinks :links="info.child" :type="'unit'" /></Collapse>
+        <Collapse :title="t('parents')"
           ><ListLinks :links="info.parents" :type="'unit'"
         /></Collapse>
-        <Collapse :title="t('triggerUnitID')" class="text-xs sm:text-sm" v-if="info.trigger_unit">
-          <Link :type="'unit'" :link="info.trigger_unit">{{ info.trigger_unit }}</Link>
+        <Collapse :title="t('triggerUnitID')" v-if="info.trigger_unit">
+          <div class="grid">
+            <Link :type="'unit'" :link="info.trigger_unit" class="truncate max-w-95">{{
+              info.trigger_unit
+            }}</Link>
+          </div>
         </Collapse>
         <Collapse :title="t('messages')" class="pt-2">
           <Messages />
@@ -123,14 +140,12 @@ function hide() {
           <TIElement :title="t('labelWitnessedLevel')">
             {{ info.witnessed_level }}
           </TIElement>
-          <TIElement
-            v-if="info.last_ball_unit"
-            :title="t('labelLastBallUnit')"
-            class="text-xs sm:text-sm"
-          >
-            <Link :link="info.last_ball_unit" class="block sm:inline-block" :type="'unit'">{{
-              info.last_ball_unit
-            }}</Link>
+          <TIElement v-if="info.last_ball_unit" :title="t('labelLastBallUnit')">
+            <div class="grid sm:inline">
+              <Link :link="info.last_ball_unit" :type="'unit'" class="truncate max-w-95">{{
+                info.last_ball_unit
+              }}</Link>
+            </div>
           </TIElement>
           <TIElement :title="t('labelMci')">
             {{ info.main_chain_index }}

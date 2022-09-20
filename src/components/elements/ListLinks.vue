@@ -12,8 +12,8 @@ if (props.type === "address") {
 
 <template>
   <div class="grid gap-1">
-    <div v-for="link in links" :key="link">
-      <Link :type="type" :link="link">
+    <div v-for="link in links" :key="link" :class="{ grid: type === 'unit' }">
+      <Link :type="type" :link="link" :class="{ 'truncate max-w-95': type === 'unit' }">
         {{ link }}
       </Link>
     </div>
