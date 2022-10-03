@@ -6,16 +6,17 @@ export function getAssetName(asset, assetName) {
   return asset || "bytes";
 }
 
-export function prepareData(_data, rates) {
+export function prepareData(data, rates) {
+  const _data = { ...data };
   _data.name = _data.name ? _data.name : _data.assetUnit;
   if (!_data.decimals) _data.decimals = 0;
 
   if (_data.name === "Bytes") {
     _data.name = "GBYTE";
     _data.decimals = 9;
+    _data.supply = _data.supply / 10 ** 9;
 
     if (rates.value[`GBYTE_USD`]) {
-      _data.supply = _data.supply / 10 ** 9;
       _data.dollarPrice = rates.value[`GBYTE_USD`];
       _data.marketCap = _data.dollarPrice * _data.supply;
     }
@@ -26,9 +27,9 @@ export function prepareData(_data, rates) {
   if (_data.name === "GBB") {
     _data.name = "GBB";
     _data.decimals = 9;
+    _data.supply = _data.cap;
 
     if (rates.value[`GBB_USD`]) {
-      _data.supply = _data.cap;
       _data.dollarPrice = rates.value[`GBB_USD`];
       _data.marketCap = _data.dollarPrice * (_data.supply / 10 ** 9);
     }

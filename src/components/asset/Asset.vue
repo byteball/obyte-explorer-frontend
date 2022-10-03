@@ -28,6 +28,7 @@ const { rates } = storeToRefs(useRatesStore());
 
 const { t } = useI18n();
 const isLoaded = ref(false);
+const rawData = ref({});
 const data = ref({});
 const notFound = ref(false);
 const lastRowids = ref({
@@ -55,6 +56,7 @@ useHead({
 });
 
 function assetInfoHandler(_data) {
+  rawData.value = _data;
   isNewPageLoaded.value = true;
   nextPagesEnded.value = false;
 
@@ -68,7 +70,6 @@ function assetInfoHandler(_data) {
   data.value = prepareData(_data, rates);
   isLoaded.value = true;
   isLoaded.value = true;
-  console.log(_data);
   assetName.value = _data.name;
   if (data.value.isPrivate) {
     isNewPageLoaded.value = false;
@@ -128,6 +129,12 @@ watch(y, () => {
 watch(height, () => {
   if (isLoaded.value && isNewPageLoaded.value && height.value < wHeigth.value && !notFound.value) {
     getNextPage();
+  }
+});
+
+watch(rates, () => {
+  if (isLoaded.value) {
+    data.value = prepareData(rawData.value, rates);
   }
 });
 
@@ -192,6 +199,7 @@ function back() {
         </div>
         <template v-else>
           <ListHolders
+            v-if="data.holders.length"
             class="mt-4"
             :holders="data.holders"
             :symbol="data.name"
