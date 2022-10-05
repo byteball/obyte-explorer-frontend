@@ -4,11 +4,14 @@ import { use } from "echarts/core";
 import { CanvasRenderer } from "echarts/renderers";
 import { PieChart } from "echarts/charts";
 import { TitleComponent, TooltipComponent, LegendComponent } from "echarts/components";
+import { useRouter } from "vue-router";
 import VChart from "vue-echarts";
 
 import { format } from "../../helpers/amount";
 
 use([CanvasRenderer, PieChart, TitleComponent, TooltipComponent, LegendComponent]);
+
+const router = useRouter();
 
 const props = defineProps(["name", "data"]);
 
@@ -45,10 +48,17 @@ const option = ref({
     },
   ],
 });
+
+function click(params) {
+  const { name, event } = params;
+  if (event.target.type !== "tspan") return;
+
+  router.push(`/asset/${name}`);
+}
 </script>
 
 <template>
-  <v-chart class="chart" :option="option" />
+  <v-chart class="chart" :option="option" @click="click" />
 </template>
 
 <style scoped></style>
