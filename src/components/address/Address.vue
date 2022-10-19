@@ -216,7 +216,17 @@ function back() {
         No transactions were found for this address
       </div>
       <div v-else-if="isLoaded">
-        <div class="mt-10 font-bold">{{ data.address }}</div>
+        <div class="mt-10 font-bold">
+          {{ data.address }}
+        </div>
+        <div v-if="data.arrAaResponses !== undefined" class="font-normal text-sm">
+          <a
+            :href="'https://aa-stats.obyte.org/address/' + data.address"
+            target="_blank"
+            class="link link-hover text-blue-500"
+            >View Autonomous Agent stats (TVL, turnover)
+          </a>
+        </div>
         <div class="block lg:flex">
           <div class="flex-auto">
             <Collapse
