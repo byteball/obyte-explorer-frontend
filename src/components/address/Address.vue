@@ -48,6 +48,7 @@ const filter = ref("all");
 const PL = ref(null);
 const el = ref(null);
 const paramsForPie = ref([]);
+const showStatsLink = ref(false);
 
 const { height: wHeigth } = useWindowSize();
 const { height } = useElementSize(el);
@@ -117,6 +118,7 @@ function addressInfoHandler(result) {
   }
 
   data.value = result;
+  showStatsLink.value = !result.testnet && result.arrAaResponses !== undefined;
   paramsForPie.value = prepareDataForPieFromBalances(result.objBalances);
   lastRowids.value = {
     lastInputsROWID: result.newLastInputsROWID,
@@ -219,7 +221,7 @@ function back() {
         <div class="mt-10 font-bold">
           {{ data.address }}
         </div>
-        <div v-if="data.arrAaResponses !== undefined" class="font-normal text-sm">
+        <div v-if="showStatsLink" class="font-normal text-sm">
           <a
             :href="'https://aa-stats.obyte.org/address/' + data.address"
             target="_blank"
