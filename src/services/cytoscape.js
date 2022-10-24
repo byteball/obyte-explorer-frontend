@@ -527,6 +527,7 @@ export function highlightNode(unit) {
       );
     }
 
+    waitGo = false;
     getPrev();
   } else {
     waitGo = unit;
