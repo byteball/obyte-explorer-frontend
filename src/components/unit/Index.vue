@@ -202,6 +202,6 @@ onUnmounted(() => {
 
 .alertShown {
   opacity: 1;
-  transform: translate(0, 28px);
+  transform: translate(0, 14px);
 }
 </style>
