@@ -1,9 +1,9 @@
 <script setup>
-import { computed, inject, onMounted, onUnmounted, watch } from "vue";
+import { computed, inject, onMounted, onUnmounted, watch, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { storeToRefs } from "pinia";
 import { useHead } from "@vueuse/head";
-import { ArrowCircleUpIcon } from "@heroicons/vue/outline";
+import { ArrowCircleUpIcon, ExclamationIcon } from "@heroicons/vue/outline";
 import { EventNames } from "../../enum/eventEnums";
 import { desc } from "../../configs/meta";
 
@@ -35,6 +35,9 @@ const infoStore = useInfoStore();
 const { searchInputFocused } = storeToRefs(globalState);
 const { info } = storeToRefs(infoStore);
 
+const alertShown = ref(false);
+const alertTimeout = ref();
+
 const socket = inject("socket.io");
 const title = computed(() => {
   return `${
@@ -52,6 +55,14 @@ function updDag(data) {
   }
 }
 
+function hideAlert() {
+  alertShown.value = false;
+
+  if (alertTimeout.value) {
+    clearTimeout(alertTimeout.value);
+  }
+}
+
 async function getUnitInfo(unit) {
   if (info && info.unit === unit) return;
 
@@ -59,6 +70,8 @@ async function getUnitInfo(unit) {
   if (result.deleted) {
     globalState.setLastUnit("");
     deletedHandler(unit);
+    alertShown.value = true;
+    setTimeout(hideAlert, 3000);
   } else {
     globalState.setLastUnit(result.unit);
   }
@@ -165,4 +178,30 @@ onUnmounted(() => {
       />
     </button>
   </div>
+  <div
+    class="alert alert-error shadow-lg absolute w-72 cursor-pointer"
+    :class="{ alertShown: alertShown }"
+    @click="hideAlert"
+  >
+    <div>
+      <ExclamationIcon class="h-6 w-6 text-gray-50" style="margin-top: -1px" />
+      <span class="text-gray-50">Unit not found</span>
+    </div>
+  </div>
 </template>
+
+<style scoped>
+.alert {
+  z-index: 9999999;
+  top: 24px;
+  right: 24px;
+  transition: all 0.7s;
+  opacity: 0;
+  transform: translateX(1000px);
+}
+
+.alertShown {
+  opacity: 1;
+  transform: translateX(0);
+}
+</style>
