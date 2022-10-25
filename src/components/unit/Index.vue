@@ -72,6 +72,7 @@ async function getUnitInfo(unit) {
     deletedHandler(unit);
     alertShown.value = true;
     setTimeout(hideAlert, 3000);
+    await router.push(`/`);
   } else {
     globalState.setLastUnit(result.unit);
   }
@@ -193,15 +194,14 @@ onUnmounted(() => {
 <style scoped>
 .alert {
   z-index: 9999999;
-  top: 24px;
-  right: 24px;
+  left: 24px;
   transition: all 0.7s;
   opacity: 0;
-  transform: translateX(1000px);
+  transform: translate(-1000px, 14px);
 }
 
 .alertShown {
   opacity: 1;
-  transform: translateX(0);
+  transform: translate(0, 28px);
 }
 </style>
