@@ -58,7 +58,7 @@ onMounted(() => {
 <template>
   <div v-if="objStateVarsLength > MAX_DISPLAYED" class="mt-2 mb-4">
     <input
-      class="input input-bordered input-xs"
+      class="input input-bordered input-xs focus:outline-0"
       type="text"
       v-model="filter"
       placeholder="Search"
