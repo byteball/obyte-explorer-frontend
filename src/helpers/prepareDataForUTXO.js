@@ -12,7 +12,7 @@ export function prepareDataForUTXO(unitAssets, objTransactions) {
       const transactionByAsset = objTransactions[key];
       if (!transactionByAsset) return;
 
-      const assetName = transactionByAsset.assetName || "bytes";
+      const assetName = transactionByAsset.assetName || transactionByAsset.asset || "bytes";
 
       const transaction = {
         from: [],
