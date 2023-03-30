@@ -5,7 +5,7 @@ const basicAssets = ["GBYTE", "GBB", "MBYTE", "KBYTE", "byte", "blackbytes"];
 export const useAssetNamesStore = defineStore("assetNames", {
   state: () => {
     return {
-      assetNames: {},
+      assetNames: [],
     };
   },
   actions: {

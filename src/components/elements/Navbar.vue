@@ -41,7 +41,8 @@ function search(value, raw) {
 }
 
 function searchEventHandler() {
-  const matches = autoComplete.value.feedback.matches;
+  const matches = autoComplete.value.feedback ? autoComplete.value.feedback.matches : [];
+
   if (autoComplete.value.cursor === -1) {
     if (matches.length) {
       search(matches[0].value);
@@ -49,7 +50,7 @@ function searchEventHandler() {
     } else {
       search(searchValue.value, 1);
     }
-  } else if (matches[autoComplete.value.cursor]) {
+  } else if (matches?.length && matches[autoComplete.value.cursor]) {
     search(matches[autoComplete.value.cursor].value);
   }
   searchValue.value = "";
