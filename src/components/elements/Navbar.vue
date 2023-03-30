@@ -86,9 +86,23 @@ onMounted(() => {
       src: async () => {
         return assetNames.value;
       },
+      filter: (list) => {
+        const inputValue = autoComplete.value.input.value.toLowerCase();
+        const mostSimilar = [];
+        const similar = list.filter(el => {
+          if (!el.value.toLowerCase().startsWith(inputValue)) {
+           return true; 
+          }
+          
+          mostSimilar.push(el);
+          return false;
+        })
+       
+        return [...mostSimilar, ...similar];
+      }
     },
     resultsList: {
-      maxResults: 20,
+      maxResults: 20
     },
     resultItem: {
       highlight: true,
@@ -102,6 +116,7 @@ onMounted(() => {
           }
         },
       },
+      
     },
   });
 });
