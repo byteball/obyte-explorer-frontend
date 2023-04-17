@@ -143,6 +143,7 @@ async function urlHandler() {
   if (!route.params.address) return;
 
   const params = prepareParamsForAddress(route);
+
   if (route.query.asset) {
     filter.value = route.query.asset;
   }
@@ -287,7 +288,7 @@ function back() {
               <select class="select select-bordered select-sm py-0" v-model="filter">
                 <option value="all" :selected="filter === 'all'">{{ t("labelAll") }}</option>
                 <option
-                  v-for="(value, asset) in data.objBalances"
+                  v-for="(value, asset) in data.objAddressAssets"
                   :key="asset"
                   :value="asset"
                   :selected="filter === asset"

@@ -116,6 +116,15 @@ export function prepareDataForTransfers(unitAssets, objTransactions) {
           toAddressesAndAmount[toAddresses[0]] += fromAddressesAndAmount[k];
         }
 
+        if (
+          assetName === "GBYTE" &&
+          Object.keys(toAddressesAndAmount).length === 1 &&
+          unitAssets[key].length > 1 &&
+          toAddressesAndAmount[toAddresses[0]] === 0
+        ) {
+          return; // fees: GBYTE and zero balance and more than 1 asset
+        }
+
         return addTransactionToArr(
           transactionsForRender,
           unit,

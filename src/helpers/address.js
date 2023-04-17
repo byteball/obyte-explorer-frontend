@@ -1,5 +1,6 @@
 export function prepareParamsForAddress(route, lastRowids) {
   const params = {};
+
   if (route.query.asset) {
     params.asset = route.query.asset;
   }
