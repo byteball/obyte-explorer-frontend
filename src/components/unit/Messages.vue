@@ -50,12 +50,10 @@ function getTitle(app) {
 function generateMesseges() {
   const msgs = [];
   let shownHiddenPayments = false;
-
+  
   info.value.messages.forEach((m) => {
     if (!m.payload) {
       if (m.app === "payment" && m.payload_location === "none" && !shownHiddenPayments) {
-        if (view.value === "Transfers") return;
-
         msgs.push({
           title: t("hiddenPayments"),
           type: "hidden",
@@ -70,6 +68,7 @@ function generateMesseges() {
         });
         shownHiddenPayments = true;
       }
+
       return;
     }
 
@@ -185,6 +184,14 @@ watch(view, () => {
       <Collapse v-else-if="message.type === 'text'" :title="message.title" :is-sub-collapse="true">
         <pre class="whitespace-pre-wrap break-words text-sm">{{ message.text }}</pre>
       </Collapse>
+      <div
+        class="text-gray-600 inline-flex align-middle bg-gray-100 w-full p-1"
+        v-else-if="message.type === 'hidden'"
+      >
+        <slot name="title">
+          <span class="text-sm">{{ message.title }}</span>
+        </slot>
+      </div>
       <RawPayload
         v-else
         :title="message.title"
