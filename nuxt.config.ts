@@ -1,4 +1,6 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
+import { pathToExplorer } from "./configs/pathToExplorer";
+
 export default defineNuxtConfig({
   devtools: { enabled: false },
   modules: [
@@ -20,10 +22,10 @@ export default defineNuxtConfig({
     },
     proxies: {
       "/api": {
-        target: `https://explorer.obyte.org`,
+        target: pathToExplorer,
       },
       "/socket.io": {
-        target: `https://explorer.obyte.org`,
+        target: pathToExplorer,
         ws: true
       },
     }
