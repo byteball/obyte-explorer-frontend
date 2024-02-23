@@ -1,0 +1,37 @@
+#cy {
+    position: absolute;
+    left: 0;
+    top: 4rem;
+    bottom: 0;
+    z-index: 999;
+}
+
+.v-enter-active,
+.v-leave-active {
+    transition: opacity 0.5s ease;
+}
+
+.v-enter-from,
+.v-leave-to {
+    opacity: 0;
+}
+
+.list-enter-active,
+.list-leave-active {
+    transition: all 1.5s ease;
+}
+.list-enter-from,
+.list-leave-to {
+    opacity: 0;
+}
+
+.up {
+    z-index: 1100 !important;
+    position: absolute !important;
+}
+
+.tooltip {
+    font-weight: 400 !important;
+    font-size: 14px !important;
+    text-transform: none;
+}

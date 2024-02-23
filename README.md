@@ -1,41 +1,32 @@
-# Obyte explorer frontend
+# Obyte explorer front-end
 
-## Recommended IDE Setup
 
-[VSCode](https://code.visualstudio.com/)
+## Setup
 
-+ [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur)
-+ [TypeScript Vue Plugin (Volar)](https://marketplace.visualstudio.com/items?itemName=Vue.vscode-typescript-vue-plugin)
+Make sure to install the dependencies:
 
-Or [Webstorm](https://www.jetbrains.com/webstorm/)
-
-## Project Setup
-
-```sh
+```bash
+# npm
 npm install
 ```
 
-### Compile and Hot-Reload for Development
+## Development Server
 
-```sh
+Start the development server on `http://localhost:3000`:
+
+```bash
+# npm
 npm run dev
 ```
 
-### Compile and Minify for Production
+## Production
 
-```sh
+Build the application for production:
+
+```bash
+# npm
 npm run build
+PORT=4001 node .output/server/index.mjs
 ```
 
-### Lint with [ESLint](https://eslint.org/)
-
-```sh
-npm run lint
-```
-
-## Explorer backend
-
-For **development** specify a link to the backend in vite.config.js if it differs
-from http://localhost:4000
-
-For **production** compile and see [obyte-explorer](https://github.com/byteball/obyte-explorer#nginx-config)
+Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
