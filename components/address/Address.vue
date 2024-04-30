@@ -233,6 +233,9 @@ function back() {
             >View Autonomous Agent stats (TVL, turnover)
           </a>
         </div>
+        <div v-if="data.aaDescription" class="mt-1">
+          {{ data.aaDescription }}
+        </div>
         <div class="block lg:flex">
           <div class="flex-auto">
             <Collapse
