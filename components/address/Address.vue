@@ -152,7 +152,7 @@ async function urlHandler() {
   }
 
   isLoaded.value = false;
-  const result = await fetchAddressInfo($socket, route.params.address, params);  
+  const result = await fetchAddressInfo($socket, route.params.address, params);
   addressInfoHandler(result);
 }
 
