@@ -152,7 +152,7 @@ async function urlHandler() {
   }
 
   isLoaded.value = false;
-  const result = await fetchAddressInfo($socket, route.params.address, params);
+  const result = await fetchAddressInfo($socket, route.params.address, params);  
   addressInfoHandler(result);
 }
 
@@ -232,6 +232,9 @@ function back() {
             class="link link-hover text-blue-500"
             >View Autonomous Agent stats (TVL, turnover)
           </a>
+        </div>
+        <div v-if="data.aaDescription" class="mt-1">
+          {{ data.aaDescription }}
         </div>
         <div class="block lg:flex">
           <div class="flex-auto">
