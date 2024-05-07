@@ -26,6 +26,7 @@ const { lastUnit, view } = storeToRefs(useGlobalStateStore());
 const { rates } = storeToRefs(useRatesStore());
 
 import fetchAddressInfo from "~/api/fetchAddressInfo";
+import AADescription from "~/components/address/AADescription.vue";
 
 const { $socket } = useNuxtApp();
 const { t } = useI18n();
@@ -233,9 +234,12 @@ function back() {
             >View Autonomous Agent stats (TVL, turnover)
           </a>
         </div>
-        <div v-if="data.aaDescription" class="mt-1">
-          {{ data.aaDescription }}
-        </div>
+        <ClientOnly>
+          <AADescription
+            :definition="data.definition"
+            :baseAaDefinition="data.baseAaDefinition"
+          />
+        </ClientOnly>
         <div class="block lg:flex">
           <div class="flex-auto">
             <Collapse
