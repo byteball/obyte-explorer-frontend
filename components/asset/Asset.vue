@@ -12,6 +12,8 @@ import ListHolders from "~/components/asset/ListHolders.vue";
 import { useGlobalStateStore } from "~/stores/globalState";
 import { useRatesStore } from "~/stores/rates";
 import fetchAssetInfo from "~/api/fetchAssetInfo";
+import AADescription from "~/components/address/AADescription.vue";
+import Link from "~/components/elements/Link.vue";
 
 const { $socket } = useNuxtApp();
 
@@ -70,6 +72,10 @@ function assetInfoHandler(_data) {
   }
 
   data.value = prepareData(_data, rates);
+
+  console.error('DATA', data.value)
+  console.error('DEF', data.value.assetInfo.authorDefinition);
+
   isLoaded.value = true;
   isLoaded.value = true;
   assetName.value = _data.name;
@@ -89,6 +95,7 @@ async function urlHandler() {
   isLoaded.value = false;
 
   const result = await fetchAssetInfo($socket, route.params.asset);
+
   assetInfoHandler(result);
 }
 
@@ -135,7 +142,7 @@ watch(height, () => {
 });
 
 watch(rates, () => {
-  if (isLoaded.value) {
+  if (isLoaded.value) {    
     data.value = prepareData(rawData.value, rates);
   }
 });
@@ -171,6 +178,25 @@ function back() {
             :url="data.url"
             :url-name="data.urlName"
           />
+        </div>
+
+        <div v-if="data.assetInfo" class="mt-4">
+          <div v-if="data.assetInfo.data && data.assetInfo.data.description" class="mt-4">
+            {{  data.assetInfo.data.description }}
+          </div>
+          
+          <div class="mt-4">
+            Author:
+            <Link :type="'address'" :link="data.assetInfo.author">{{  data.assetInfo.author }}</Link>
+          </div>
+
+          <div v-if="data.assetInfo.authorDefinition" class="mt-4">
+            <ClientOnly>
+              <AADescription
+                :definition="data.assetInfo.authorDefinition"
+              />
+            </ClientOnly>
+          </div>
         </div>
         <div class="mt-4" v-if="data.supply">
           <div>
