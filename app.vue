@@ -6,12 +6,18 @@ import { parseQueryParamsStrToObj } from "./helpers/text";
 const router = useRouter();
 
 function checkHashAndRedirect() {
+  console.error('l', location);
+  
   if (location.hash && location.hash !== "#") {
     const hash = location.hash;
     const hashSplit = hash.split("?");
     const value = hashSplit[0].replace(/%20/g, " ").substring(1);
 
+    console.error('vvvv', value);
+    
     if (value.startsWith("/asset")) {
+      console.error('vvvv', value);
+      
       router.push(`/asset/${value.substring(7)}`);
       return;
     }
