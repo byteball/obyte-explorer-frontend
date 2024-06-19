@@ -73,9 +73,6 @@ function assetInfoHandler(_data) {
 
   data.value = prepareData(_data, rates);
 
-  console.error('DATA', data.value)
-  console.error('DEF', data.value.assetInfo.authorDefinition);
-
   isLoaded.value = true;
   isLoaded.value = true;
   assetName.value = _data.name;
@@ -180,17 +177,17 @@ function back() {
           />
         </div>
 
-        <div v-if="data.assetInfo" class="mt-4">
-          <div v-if="data.assetInfo.data && data.assetInfo.data.description" class="mt-4">
-            {{  data.assetInfo.data.description }}
+        <div v-if="data.assetInfo" class="mt-1">
+          <div v-if="data.assetInfo.assetDescription">
+            {{ data.assetInfo.assetDescription }}
           </div>
           
           <div class="mt-4">
             Author:
-            <Link :type="'address'" :link="data.assetInfo.author">{{  data.assetInfo.author }}</Link>
+            <Link :type="'address'" :link="data.assetInfo.author">{{ data.assetInfo.author }}</Link>
           </div>
 
-          <div v-if="data.assetInfo.authorDefinition" class="mt-4">
+          <div v-if="data.assetInfo.authorDefinition" class="mt-1">
             <ClientOnly>
               <AADescription
                 :definition="data.assetInfo.authorDefinition"
