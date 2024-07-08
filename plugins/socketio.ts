@@ -4,8 +4,11 @@ import { useGlobalStateStore } from "~/stores/globalState";
 import { useRatesStore } from "~/stores/rates";
 import { useAssetNamesStore } from "~/stores/assetNames";
 
+import { isDevNet } from "~/configs/isDevNet";
+import { pathToExplorer } from "~/configs/pathToExplorer";
+
 export default defineNuxtPlugin(() => {
-  const socket = io();
+  const socket = isDevNet ? io(pathToExplorer) : io();
 
   const ratesStore = useRatesStore();
   const assetNamesStore = useAssetNamesStore();
