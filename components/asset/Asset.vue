@@ -182,7 +182,7 @@ function back() {
             {{ data.assetInfo.assetDescription }}
           </div>
           
-          <div class="mt-4">
+          <div  v-if="data.assetInfo.author" class="mt-4">
             Author:
             <Link :type="'address'" :link="data.assetInfo.author">{{ data.assetInfo.author }}</Link>
           </div>
