@@ -281,12 +281,6 @@ function back() {
             >
               <AAResponses :arr-aa-responses="data.arrAaResponses" />
             </Collapse>
-            <TIElement class="pt-4" v-if="data.tpsFeesBalance !== null" :title="t('labelTpsFeesBalance')">
-              <FormatAmount
-                :amount="data.tpsFeesBalance"
-                :rates="rates"
-              />
-            </TIElement>
             <div class="pt-4 grid gap-1">
               <div v-for="(value, asset) in data.objBalances" :key="asset" class="flex">
                 <FormatAmount
@@ -299,6 +293,13 @@ function back() {
                   {{ getAssetName(asset, value.assetName) }}
                 </Link>
               </div>
+            </div>
+            <div class="pt-4" v-if="data.tpsFeesBalance !== null">
+              <span>{{ t("labelTpsFeesBalance") }}: </span>
+              <FormatAmount
+                :amount="data.tpsFeesBalance"
+                :rates="rates"
+              />
             </div>
             <div class="mt-4">
               <span>{{ t("transactionsInAssets") }}: </span>
