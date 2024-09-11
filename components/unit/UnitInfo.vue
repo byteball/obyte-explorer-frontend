@@ -118,7 +118,7 @@ function hide() {
         >
           <AAResponses :arr-aa-responses="info.arrAaResponses" />
         </Collapse>
-        <Collapse :title="t('witnesses')" :closed="true"
+        <Collapse v-if="parseInt(info.objJoint.unit.version) < 4" :title="t('witnesses')" :closed="true"
           ><ListLinks :links="info.witnesses" :type="'address'"
         /></Collapse>
         <Collapse :title="t('techInfo')">
@@ -130,25 +130,25 @@ function hide() {
             ({{ info.headers_commission }} {{ t("labelHeaders") }}, {{ info.payload_commission }}
             {{ t("labelPayload") }})
           </TIElement>
-          <TIElement v-if="info.tps_fee" :title="t('labelTpsFee')">
+          <TIElement v-if="info.tps_fee !== null" :title="t('labelTpsFee')">
             <FormatAmount
               :amount="info.tps_fee"
               :rates="rates"
             />
           </TIElement>
-          <TIElement v-if="info.actual_tps_fee" :title="t('labelActualTpsFee')">
+          <TIElement v-if="info.actual_tps_fee !== null" :title="t('labelActualTpsFee')">
             <FormatAmount
               :amount="info.actual_tps_fee"
               :rates="rates"
             />
           </TIElement>
-          <TIElement v-if="info.burn_fee" :title="t('labelBurnFee')">
+          <TIElement v-if="info.burn_fee !== null" :title="t('labelBurnFee')">
             <FormatAmount
               :amount="info.burn_fee"
               :rates="rates"
             />
           </TIElement>
-          <TIElement v-if="info.oversize_fee" :title="t('labelOversizeFee')">
+          <TIElement v-if="info.oversize_fee !== null" :title="t('labelOversizeFee')">
             <FormatAmount
               :amount="info.oversize_fee"
               :rates="rates"
