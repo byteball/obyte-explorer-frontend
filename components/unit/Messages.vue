@@ -118,7 +118,7 @@ function generateMessages() {
       }
     }
 
-    if (m.app === "text") {
+    if (m.app === "text" || m.app === 'system_vote_count') {
       result.text = m.payload;
       return msgs.push(result);
     }
@@ -179,7 +179,7 @@ watch(view, () => {
           <span class="whitespace-pre-wrap break-words">{{ message.json }}</span>
         </div>
       </Collapse>
-      <Collapse v-else-if="message.type === 'text'" :title="message.title" :is-sub-collapse="true">
+      <Collapse v-else-if="message.type === 'text' || message.type === 'system_vote_count'" :title="message.title" :is-sub-collapse="true">
         <pre class="whitespace-pre-wrap break-words text-sm">{{ message.text }}</pre>
       </Collapse>
       <div

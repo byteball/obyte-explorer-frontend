@@ -27,6 +27,7 @@ const { rates } = storeToRefs(useRatesStore());
 
 import fetchAddressInfo from "~/api/fetchAddressInfo";
 import AADescription from "~/components/address/AADescription.vue";
+import TIElement from "~/components/unit/TIElement.vue";
 
 const { $socket } = useNuxtApp();
 const { t } = useI18n();
@@ -280,6 +281,12 @@ function back() {
             >
               <AAResponses :arr-aa-responses="data.arrAaResponses" />
             </Collapse>
+            <TIElement class="pt-4" v-if="data.tpsFeesBalance !== null" :title="t('labelTpsFeesBalance')">
+              <FormatAmount
+                :amount="data.tpsFeesBalance"
+                :rates="rates"
+              />
+            </TIElement>
             <div class="pt-4 grid gap-1">
               <div v-for="(value, asset) in data.objBalances" :key="asset" class="flex">
                 <FormatAmount
