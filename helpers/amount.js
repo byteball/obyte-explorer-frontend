@@ -30,7 +30,7 @@ export function getUsdText(byteAmount, exchangeRates) {
 
   const decimalUsdAmount = new Decimal(usdAmount).toFixed(9);
 
-  return ` ≈ $${+decimalUsdAmount}`;
+  return ` ≈ $${new Decimal(decimalUsdAmount).toFixed()}`;
 }
 
 export function format(number) {
