@@ -26,7 +26,7 @@ export function getUsdText(byteAmount, exchangeRates) {
     return ` ≈ $${usdAmount.toFixed(2)}`;
   }
 
-  const decimalUsdAmount = usdAmount.toLocaleString([], { maximumFractionDigits: 9 });
+  const decimalUsdAmount = usdAmount.toLocaleString('en-US', { maximumSignificantDigits: 2 });
 
   return ` ≈ $${decimalUsdAmount}`;
 }
