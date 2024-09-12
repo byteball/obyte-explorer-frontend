@@ -1,5 +1,3 @@
-import Decimal from "decimal.js";
-
 export function getFormattedObject(amount, bytePayment, decimals, exchangeRates) {
   const nameForBytes = decimals ? "GBYTE" : "bytes";
   
@@ -28,9 +26,9 @@ export function getUsdText(byteAmount, exchangeRates) {
     return ` ≈ $${usdAmount.toFixed(2)}`;
   }
 
-  const decimalUsdAmount = new Decimal(usdAmount).toFixed(9);
+  const decimalUsdAmount = usdAmount.toLocaleString([], { maximumFractionDigits: 9 });
 
-  return ` ≈ $${new Decimal(decimalUsdAmount).toFixed()}`;
+  return ` ≈ $${decimalUsdAmount}`;
 }
 
 export function format(number) {
