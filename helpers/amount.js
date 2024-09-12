@@ -1,5 +1,6 @@
 export function getFormattedObject(amount, bytePayment, decimals, exchangeRates) {
   const nameForBytes = decimals ? "GBYTE" : "bytes";
+  
   return {
     value: formatAmountUsingDecimalFormat(amount, decimals),
     usd: bytePayment ? `${nameForBytes}${getUsdText(amount, exchangeRates)}` : "",
@@ -25,7 +26,9 @@ export function getUsdText(byteAmount, exchangeRates) {
     return ` ≈ $${usdAmount.toFixed(2)}`;
   }
 
-  return ` ≈ $${usdAmount.toPrecision(2)}`;
+  const decimalUsdAmount = usdAmount.toLocaleString('en-US', { maximumSignificantDigits: 2 });
+
+  return ` ≈ $${decimalUsdAmount}`;
 }
 
 export function format(number) {

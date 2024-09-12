@@ -33,6 +33,8 @@ function out() {
 }
 
 updValue();
+
+watch(() => props.rates, updValue);
 </script>
 
 <template>

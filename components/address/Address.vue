@@ -27,6 +27,7 @@ const { rates } = storeToRefs(useRatesStore());
 
 import fetchAddressInfo from "~/api/fetchAddressInfo";
 import AADescription from "~/components/address/AADescription.vue";
+import TIElement from "~/components/unit/TIElement.vue";
 
 const { $socket } = useNuxtApp();
 const { t } = useI18n();
@@ -292,6 +293,13 @@ function back() {
                   {{ getAssetName(asset, value.assetName) }}
                 </Link>
               </div>
+            </div>
+            <div class="pt-4" v-if="data.tpsFeesBalance !== null">
+              <span>{{ t("labelTpsFeesBalance") }}: </span>
+              <FormatAmount
+                :amount="data.tpsFeesBalance"
+                :rates="rates"
+              />
             </div>
             <div class="mt-4">
               <span>{{ t("transactionsInAssets") }}: </span>
