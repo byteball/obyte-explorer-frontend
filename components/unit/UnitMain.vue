@@ -53,6 +53,7 @@ function hideAlert() {
 async function getUnitInfo(unit) {
   if (info && info.unit === unit) return;
 
+  infoStore.setLoading(true);
   const result = await fetchUnitInfo($socket, unit);
   if (result.deleted) {
     globalState.setLastUnit("");
@@ -65,6 +66,7 @@ async function getUnitInfo(unit) {
   }
   infoStore.setInfo(result);
   infoStore.setReady(true);
+  infoStore.setLoading(false);
 }
 
 function highlightNodeEmitHandler({ type, data }) {

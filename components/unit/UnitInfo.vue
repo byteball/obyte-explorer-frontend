@@ -11,11 +11,12 @@ import Clipboard from "~/components/elements/Clipboard.vue";
 import AAResponses from "~/components/transactions/AAResponses.vue";
 import TIElement from "~/components/unit/TIElement.vue";
 import Messages from "~/components/unit/Messages.vue";
+import Spinner from "~/components/icons/Spinner.vue";
 
 import { useInfoStore } from "~/stores/info.js";
 import { useRatesStore } from "~/stores/rates.js";
 
-const { info, isReady } = storeToRefs(useInfoStore());
+const { info, isReady, loading } = storeToRefs(useInfoStore());
 const { rates } = storeToRefs(useRatesStore());
 
 const { t } = useI18n();
@@ -50,7 +51,9 @@ function hide() {
     :class="{ hidden: isHidden || !info.unit }"
   >
     <div v-if="!isReady" class="text-center">{{ t("selectUnit") }}</div>
-    <div v-if="isReady" class="p-1 sm:p-2">
+    
+    <div v-if="loading" class="text-center"><Spinner class="w-20 h-20 inline-block" /></div>
+    <div v-else-if="isReady" class="p-1 sm:p-2">
       <div v-if="info.deleted" class="text-center font-bold">
         {{ t("infoMessageUnitNotFound") }}
       </div>
