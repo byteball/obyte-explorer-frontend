@@ -2,6 +2,7 @@ export const useInfoStore = defineStore("info", {
   state: () => {
     return {
       isReady: false,
+      loading: false,
       info: {},
     };
   },
@@ -19,6 +20,9 @@ export const useInfoStore = defineStore("info", {
     setReady(status) {
       this.isReady = status;
     },
+    setLoading(status){
+      this.loading = status;
+    }
   },
 });
 
