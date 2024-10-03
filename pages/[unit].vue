@@ -55,7 +55,7 @@ async function getUnitInfo(unit) {
 
 const getUnitInformation = async () => {
   if (route.params.unit) {
-    await getUnitInfo(route.params.unit);
+    await getUnitInfo(decodeURIComponent(route.params.unit));
     // $socket.emit(EventNames.GetUnit, { unit: route.params.unit }, updDag);
     return;
   }
