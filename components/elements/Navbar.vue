@@ -35,6 +35,10 @@ function search(value, raw) {
     if (value.length === 32) {
       router.push(`/address/${value}`);
     } else {
+      if (value[0] === '/') {
+        value = value.replace('/', '%2F');
+      }
+      
       router.push(`/${value}`);
     }
 

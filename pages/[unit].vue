@@ -53,14 +53,16 @@ async function getUnitInfo(unit) {
   infoStore.setReady(true);
 }
 
-const getUnitInformation = async () => {
+const getUnitInformation = async () => {  
   if (route.params.unit) {
-    await getUnitInfo(route.params.unit);
-    // $socket.emit(EventNames.GetUnit, { unit: route.params.unit }, updDag);
-    return;
+    let unit = route.params.unit;
+    
+    if (unit.startsWith('%2F')) {
+      unit = unit.replace('%2F', '/');
+    }
+    
+    await getUnitInfo(unit);
   }
-  //
-  // await getLastUnits();
 }
 
 if (!process.client) {
