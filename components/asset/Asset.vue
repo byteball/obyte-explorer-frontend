@@ -186,7 +186,7 @@ function back() {
             Author:
             <span v-if="data.assetInfo.triggerAuthor"> 
               <Link :type="'address'" :link="data.assetInfo.triggerAuthor">{{ data.assetInfo.triggerAuthor }}</Link>
-              via 
+              via AA
               <Link :type="'address'" :link="data.assetInfo.author">{{ data.assetInfo.author }} </Link>
             </span>
             <span v-else>
