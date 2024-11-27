@@ -182,9 +182,16 @@ function back() {
             {{ data.assetInfo.assetDescription }}
           </div>
           
-          <div  v-if="data.assetInfo.author" class="mt-4">
+          <div v-if="data.assetInfo.author" class="mt-4">
             Author:
-            <Link :type="'address'" :link="data.assetInfo.author">{{ data.assetInfo.author }}</Link>
+            <span v-if="data.assetInfo.triggerAuthor"> 
+              <Link :type="'address'" :link="data.assetInfo.triggerAuthor">{{ data.assetInfo.triggerAuthor }}</Link>
+              via AA
+              <Link :type="'address'" :link="data.assetInfo.author">{{ data.assetInfo.author }} </Link>
+            </span>
+            <span v-else>
+              <Link :type="'address'" :link="data.assetInfo.author">{{ data.assetInfo.author }} </Link>
+            </span>
           </div>
 
           <div v-if="data.assetInfo.authorDefinition" class="mt-1">
