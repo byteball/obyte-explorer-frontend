@@ -70,7 +70,7 @@ function hide() {
             </div>
           </div>
         </div>
-        <div>
+        <div v-if="info.timestamp">
           <div class="text-sm text-gray-600">{{ t("received") }}</div>
           <div>{{ getDateFromSeconds(info.timestamp) }}</div>
         </div>
@@ -86,7 +86,7 @@ function hide() {
             {{ getDurationFromSeconds(info.light_node_confirmation_delay) }}
           </div>
         </div>
-        <Collapse :title="t('authors')">
+        <Collapse v-if="info.authors" :title="t('authors')">
           <div v-for="author in info.authors" :key="author.address">
             <Link :type="'address'" :link="author.address">{{ author.address }}</Link>
             <Collapse
@@ -110,7 +110,7 @@ function hide() {
             }}</Link>
           </div>
         </Collapse>
-        <Collapse :title="t('messages')" class="pt-2">
+        <Collapse v-if="info.messages" :title="t('messages')" class="pt-2">
           <Messages />
         </Collapse>
         <Collapse
@@ -121,11 +121,11 @@ function hide() {
         >
           <AAResponses :arr-aa-responses="info.arrAaResponses" />
         </Collapse>
-        <Collapse v-if="parseInt(info.objJoint.unit.version) < 4" :title="t('witnesses')" :closed="true"
+        <Collapse v-if="info.objJoint && parseInt(info.objJoint.unit.version) < 4" :title="t('witnesses')" :closed="true"
           ><ListLinks :links="info.witnesses" :type="'address'"
         /></Collapse>
         <Collapse :title="t('techInfo')">
-          <TIElement :title="t('labelFees')">
+          <TIElement v-if="info.sequence === 'good'" :title="t('labelFees')">
             <FormatAmount
               :amount="info.headers_commission + info.payload_commission"
               :rates="rates"
@@ -177,7 +177,12 @@ function hide() {
             {{ info.latest_included_mc_index }}
           </TIElement>
           <TIElement :title="t('labelIsStable')">
+            <template v-if="info.sequence === 'good'">
             {{ info.is_stable ? t("statusFinal") : t("statusNotStable") }}
+            </template>
+            <template v-else>
+              {{ info.sequence }}
+            </template>
           </TIElement>
         </Collapse>
       </div>
