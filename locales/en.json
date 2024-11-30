@@ -19,6 +19,7 @@
 	"labelLastBallUnit": "Last ball unit",
 	"labelMci": "Main chain index",
 	"labelLatestMci": "Latest included mc index",
+	"labelSequence": "Sequence",
 	"labelIsStable": "Status",
 	"statusNotStable": "not stable",
 	"statusFinal": "stable/confirmed/final",
