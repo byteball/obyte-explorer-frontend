@@ -110,7 +110,7 @@ function hide() {
             }}</Link>
           </div>
         </Collapse>
-        <Collapse v-if="info.messages" :title="t('messages')" class="pt-2">
+        <Collapse v-if="info.messages && info.messages.length" :title="t('messages')" class="pt-2">
           <Messages />
         </Collapse>
         <Collapse
@@ -176,13 +176,11 @@ function hide() {
           <TIElement :title="t('labelLatestMci')">
             {{ info.latest_included_mc_index }}
           </TIElement>
+          <TIElement v-if="info.sequence !== 'good'" :title="t('labelSequence')">
+            {{ info.sequence }}
+          </TIElement>
           <TIElement :title="t('labelIsStable')">
-            <template v-if="info.sequence === 'good'">
             {{ info.is_stable ? t("statusFinal") : t("statusNotStable") }}
-            </template>
-            <template v-else>
-              {{ info.sequence }}
-            </template>
           </TIElement>
         </Collapse>
       </div>
