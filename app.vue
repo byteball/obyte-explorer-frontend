@@ -2,6 +2,7 @@
 import Navbar from "~/components/elements/Navbar.vue";
 
 import { parseQueryParamsStrToObj } from "./helpers/text";
+import { prepareLink } from "~/helpers/prepareLink.js";
 
 const router = useRouter();
 
@@ -21,7 +22,7 @@ function checkHashAndRedirect() {
     }
 
     if (value.length === 44) {
-      router.push(`/${value}`);
+      router.push(`/${prepareLink(value)}`);
       return;
     }
 

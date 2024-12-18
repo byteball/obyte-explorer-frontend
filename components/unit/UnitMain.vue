@@ -20,6 +20,8 @@ import {
 import { useGlobalStateStore } from "~/stores/globalState";
 import { useInfoStore } from "~/stores/info.js";
 import fetchUnitInfo from "~/api/fetchUnitInfo";
+import { normalizeUnit } from "~/helpers/normalizeUnit.js";
+import { prepareLink } from "~/helpers/prepareLink.js";
 
 const router = useRouter();
 const route = useRoute();
@@ -35,10 +37,12 @@ const alertTimeout = ref();
 
 const { $socket } = useNuxtApp();
 
+const unitFromRoute = computed(() => normalizeUnit(route.params.unit));
+
 function updDag(data) {
   updDagHandler(data);
-  if (route.params.unit) {
-    setCurrentUnit(route.params.unit);
+  if (unitFromRoute.value) {
+    setCurrentUnit(unitFromRoute.value);
   }
 }
 
@@ -98,9 +102,7 @@ setEmitHandler((name, data) => {
 });
 
 setClickHandler((unit) => {
-  if (unit.startsWith("/")) {
-     unit = unit.replace("/", "%2F");
-  }
+  unit = prepareLink(unit);
   router.push(`/${unit}`);
 });
 
@@ -131,12 +133,12 @@ function keyDown(e) {
 }
 
 watch(
-  () => route.params.unit,
+  () => unitFromRoute.value,
   () => {
-    if (route.name !== "home") return;
+    if (route.name !== "home" && route.name !== 'unit') return;
 
-    if (route.params.unit) {
-      highlightNode(route.params.unit);
+    if (unitFromRoute.value) {
+      highlightNode(unitFromRoute.value);
     } else {
       resetUnit();
     }
@@ -145,9 +147,9 @@ watch(
 
 onMounted(() => {
   window.addEventListener("keydown", keyDown);
-  if (route.params.unit) {
-    getUnitInfo(route.params.unit);
-    $socket.emit(EventNames.GetUnit, { unit: route.params.unit }, updDag);
+  if (unitFromRoute.value) {
+    getUnitInfo(unitFromRoute.value);
+    $socket.emit(EventNames.GetUnit, { unit: unitFromRoute.value }, updDag);
     return;
   }
   getLastUnits();

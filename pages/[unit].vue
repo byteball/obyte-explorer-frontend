@@ -7,6 +7,8 @@ import fetchUnitInfo from "~/api/fetchUnitInfo.js";
 import { useGlobalStateStore } from "~/stores/globalState.js";
 import { useInfoStore } from "~/stores/info.js";
 import { desc } from "~/configs/meta.js";
+import { normalizeUnit } from "~/helpers/normalizeUnit.js";
+import { prepareLink } from "~/helpers/prepareLink.js";
 
 const globalState = useGlobalStateStore();
 const infoStore = useInfoStore();
@@ -14,17 +16,18 @@ const infoStore = useInfoStore();
 const { info } = storeToRefs(infoStore);
 const { $socket } = useNuxtApp();
 
-const router = useRouter();
 const route = useRoute();
 
 definePageMeta({
-  path: "/:unit(.*)?",
-  name: "home",
+  path: "/:unit+",
+  name: "unit",
   keepalive: true,
   key: 'unit',
 })
 
-const title = (route.params.unit ? `Unit ${route.params.unit} details on Obyte DAG chain | ` : '') + desc;
+const unitFromRoute = computed(() => normalizeUnit(route.params.unit));
+
+const title = (unitFromRoute.value ? `Unit ${unitFromRoute.value} details on Obyte DAG chain | ` : '') + desc;
 useHead({
   title: title,
   meta: [
@@ -54,14 +57,10 @@ async function getUnitInfo(unit) {
 }
 
 const getUnitInformation = async () => {  
-  if (route.params.unit) {
-    let unit = route.params.unit;
+  if (unitFromRoute.value) {
+    let _unit = prepareLink(unitFromRoute.value);
     
-    if (unit.startsWith('%2F')) {
-      unit = unit.replace('%2F', '/');
-    }
-    
-    await getUnitInfo(unit);
+    await getUnitInfo(_unit);
   }
 }
 

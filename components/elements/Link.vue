@@ -1,4 +1,6 @@
 <script setup>
+import { prepareLink } from "~/helpers/prepareLink.js";
+
 const props = defineProps({
   link: String,
   type: String,
@@ -11,14 +13,6 @@ if (props.type === "address") {
 
 if (props.type === "asset") {
   path.value += "asset/";
-}
-
-function prepareLink(link) {
-  if (link.startsWith("/")) {
-    return link.replace("/", "%2F");
-  }
-
-  return link;
 }
 </script>
 
