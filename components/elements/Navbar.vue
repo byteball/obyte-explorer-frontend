@@ -11,6 +11,7 @@ import { useGlobalStateStore } from "~/stores/globalState.js";
 import { useAssetNamesStore } from "~/stores/assetNames.js";
 
 import ObyteLogo from "~/components/icons/ObyteLogo.vue";
+import { prepareLink } from "~/helpers/prepareLink.js";
 
 const { t } = useI18n();
 const router = useRouter();
@@ -35,9 +36,7 @@ function search(value, raw) {
     if (value.length === 32) {
       router.push(`/address/${value}`);
     } else {
-      if (value[0] === '/') {
-        value = value.replace('/', '%2F');
-      }
+      value = prepareLink(value);
       
       router.push(`/${value}`);
     }

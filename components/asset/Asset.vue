@@ -1,6 +1,7 @@
 <script setup>
 import { useElementSize, useWindowScroll, useWindowSize } from "@vueuse/core";
 import { prepareData } from "~/helpers/asset";
+import { prepareLink } from "~/helpers/prepareLink.js";
 import { desc } from "~/configs/meta";
 
 import PaymentList from "~/components/transactions/PaymentList.vue";
@@ -150,7 +151,7 @@ watch(() => route.params.asset, urlHandler);
 
 function back() {
   if (lastUnit.value) {
-    return router.push({ path: "/" + lastUnit.value });
+    return router.push({ path: "/" + prepareLink(lastUnit.value) });
   }
 
   return router.push({ path: "/" });

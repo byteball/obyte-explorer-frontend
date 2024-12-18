@@ -512,6 +512,7 @@ function getHighlightNode(unit) {
 
 export function highlightNode(unit) {
   emitHandler(EventNames.Info, { unit });
+  unit = decodeURIComponent(unit);
   if (!_cy) createCy();
   if (activeNode) _cy.getElementById(activeNode).removeClass("active");
   const el = _cy.getElementById(unit);
