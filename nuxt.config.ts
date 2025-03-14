@@ -5,6 +5,7 @@ import { isDevNet } from "./configs/isDevNet";
 export default defineNuxtConfig({
   devtools: { enabled: false },
   ssr: !isDevNet,
+
   app: {
     head: {
       htmlAttrs: {
@@ -22,15 +23,19 @@ export default defineNuxtConfig({
       ]
     }
   },
+
   modules: [
     '@nuxtjs/i18n',
     '@nuxt-alt/proxy',
     '@nuxtjs/tailwindcss',
     '@pinia/nuxt',
+    'nuxt-bugsnag',
   ],
+
   build: {
     transpile: ['echarts', 'resize-detector'],
   },
+
   i18n: {
     vueI18n: './i18n.config.ts'
   },
@@ -49,14 +54,23 @@ export default defineNuxtConfig({
       },
     }
   },
+
   postcss: {
     plugins: {
       tailwindcss: {},
       autoprefixer: {},
     },
   },
+
+  bugsnag: {
+    disabled: !import.meta.env.VITE_BUGSNAG_API_KEY,
+    publishRelease: true,
+    projectRoot: __dirname,
+    config: {
+      apiKey: import.meta.env.VITE_BUGSNAG_API_KEY,
+    }
+  },
+
   css: ['~/assets/css/index.css'],
-  alias: {
-    pinia: "/node_modules/@pinia/nuxt/node_modules/pinia/dist/pinia.mjs"
-  }
+  compatibilityDate: '2025-03-14',
 })
