@@ -1,5 +1,5 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
-import { pathToExplorer } from "./configs/pathToExplorer";
+import { getPathToServer } from "./configs/pathToExplorer";
 import { isDevNet } from "./configs/isDevNet";
 
 export default defineNuxtConfig({
@@ -46,10 +46,10 @@ export default defineNuxtConfig({
     },
     proxies: {
       "/api": {
-        target: pathToExplorer,
+        target: getPathToServer(),
       },
       "/socket.io": {
-        target: pathToExplorer,
+        target: getPathToServer(),
         ws: true
       },
     }

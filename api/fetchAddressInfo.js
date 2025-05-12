@@ -1,6 +1,6 @@
 import { useGlobalStateStore } from "../stores/globalState";
 import { EventNames } from "../enum/eventEnums";
-import { pathToExplorer } from "~/configs/pathToExplorer.js";
+import { getPathToServer } from "~/configs/pathToExplorer.js";
 
 export default async function fetchAddressInfo(socket, address, params) {
   const { wsConnected } = storeToRefs(useGlobalStateStore());
@@ -21,7 +21,7 @@ export default async function fetchAddressInfo(socket, address, params) {
       socket.emit(EventNames.GetAddressData, params, resolve);
     });
   } else {
-    const  data = await $fetch(`${pathToExplorer}/api/address/${address}/${type}`, {
+    const  data = await $fetch(`${getPathToServer()}/api/address/${address}/${type}`, {
       params,
     });
 
