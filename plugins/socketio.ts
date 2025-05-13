@@ -5,10 +5,10 @@ import { useRatesStore } from "~/stores/rates";
 import { useAssetNamesStore } from "~/stores/assetNames";
 
 import { isDevNet } from "~/configs/isDevNet";
-import { pathToExplorer } from "~/configs/pathToExplorer";
+import { getPathToServer } from "~/configs/pathToExplorer";
 
 export default defineNuxtPlugin(() => {
-  const socket = isDevNet ? io(pathToExplorer) : io();
+  const socket = isDevNet ? io(getPathToServer()) : io();
 
   const ratesStore = useRatesStore();
   const assetNamesStore = useAssetNamesStore();
@@ -32,7 +32,7 @@ export default defineNuxtPlugin(() => {
     assetNamesStore.setAssetNames(assetNames);
   });
   
-  if(process.server) {
+  if(import.meta.server) {
     setTimeout(() => {
       socket.disconnect()
     }, 30000)
