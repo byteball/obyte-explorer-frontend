@@ -65,7 +65,7 @@ function hide() {
           <div class="text-sm text-gray-600">{{ t("unitID") }}</div>
           <div class="text-sm">
             <div class="flex flex-wrap">
-              <div class="truncate" :style="{ maxWidth }">{{ info.unit }}</div>
+              <div class="truncate" :style="{ maxWidth }" data-allow-mismatch>{{ info.unit }}</div>
               <Clipboard class="h-5 ml-1" style="padding-top: 1px" :text="info.unit" />
             </div>
           </div>

@@ -1,17 +1,12 @@
-import { useGlobalStateStore } from "../stores/globalState";
-import { EventNames } from "../enum/eventEnums";
 import { getPathToServer } from "~/configs/pathToExplorer.js";
+import { isValidUnitHash } from "~/helpers/unit.js";
 
-export default async function fetchUnitInfo(socket, unit) {
-  const { wsConnected } = storeToRefs(useGlobalStateStore());
-
-  if (wsConnected.value) {
-    return new Promise((resolve) => {
-      socket.emit(EventNames.Info, unit, resolve);
-    });
-  } else {
-    const data = await $fetch(`${getPathToServer()}/api/unit/${encodeURIComponent(unit)}`);
-
-    return data;
+export default async function fetchUnitInfo(unit) {
+  if (!isValidUnitHash(unit)) {
+    return {
+      deleted: true,
+    };
   }
+
+  return $fetch(`${getPathToServer()}/api/unit/${encodeURIComponent(unit)}`);
 }

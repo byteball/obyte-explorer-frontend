@@ -16,8 +16,6 @@ import fetchAssetInfo from "~/api/fetchAssetInfo";
 import AADescription from "~/components/address/AADescription.vue";
 import Link from "~/components/elements/Link.vue";
 
-const { $socket } = useNuxtApp();
-
 const router = useRouter();
 const route = useRoute();
 
@@ -91,10 +89,9 @@ async function urlHandler() {
   if (!route.params.asset) return;
 
   isLoaded.value = false;
-
-  const result = await fetchAssetInfo($socket, route.params.asset);
-
-  assetInfoHandler(result);
+  const { data: result } = await useAsyncData(`asset:${route.params.asset}`, () => fetchAssetInfo(route.params.asset));
+  
+  assetInfoHandler(result.value);
 }
 
 function nextPageHandler(data) {
@@ -115,7 +112,7 @@ async function getNextPage() {
   if (nextPagesEnded.value) return;
   isNewPageLoaded.value = false;
 
-  const result = await fetchAssetInfo($socket, route.params.asset, {
+  const result = await fetchAssetInfo(route.params.asset, {
     lastInputsROWID: lastRowids.value.lastInputsROWID,
     lastOutputsROWID: lastRowids.value.lastOutputsROWID,
   });

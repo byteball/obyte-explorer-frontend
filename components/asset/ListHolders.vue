@@ -19,8 +19,6 @@ const props = defineProps([
   "supply",
 ]);
 
-const { $socket } = useNuxtApp();
-
 const { t } = useI18n();
 const listHolders = ref([]);
 const lEndHolders = ref(false);
@@ -76,7 +74,7 @@ function moreHoldersHandler(data) {
 }
 
 async function getMoreHolders() {
-  const result = await fetchNextHolders($socket, props.asset, {
+  const result = await fetchNextHolders(props.asset, {
     type: props.typeOfHolders,
     offset: lOffsetForHolders.value,
   });

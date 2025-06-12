@@ -8,6 +8,7 @@ import { isDevNet } from "~/configs/isDevNet";
 import { getPathToServer } from "~/configs/pathToExplorer";
 
 export default defineNuxtPlugin(() => {
+  if (import.meta.server) return;
   const socket = isDevNet ? io(getPathToServer()) : io();
 
   const ratesStore = useRatesStore();
@@ -31,12 +32,6 @@ export default defineNuxtPlugin(() => {
     console.log("updateAssetsList: ", assetNames);
     assetNamesStore.setAssetNames(assetNames);
   });
-  
-  if(import.meta.server) {
-    setTimeout(() => {
-      socket.disconnect()
-    }, 30000)
-  }
 
   return {
     provide: {

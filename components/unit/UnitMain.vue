@@ -54,23 +54,49 @@ function hideAlert() {
   }
 }
 
-async function getUnitInfo(unit) {
-  if (info && info.unit === unit) return;
-
-  infoStore.setLoading(true);
-  const result = await fetchUnitInfo($socket, unit);
+async function checkUnitInfoResult(result, unit) {
   if (result.deleted) {
     globalState.setLastUnit("");
     deletedHandler(unit);
     alertShown.value = true;
     setTimeout(hideAlert, 3000);
     await router.push(`/`);
-  } else {
-    globalState.setLastUnit(result.unit);
+    return false;
   }
+
+  globalState.setLastUnit(result.unit);
+  return true;
+}
+
+async function getUnitInfo(unit) {
+  if (info.value && info.value.unit === unit) return;
+
+  infoStore.setLoading(true);
+  const result = await fetchUnitInfo(unit);
+
+  const isOk = await checkUnitInfoResult(result, unit);
+
+  if (!isOk) {
+    infoStore.setLoading(false);
+    resetUnit();
+    return;
+  }
+
   infoStore.setInfo(result);
   infoStore.setReady(true);
   infoStore.setLoading(false);
+}
+
+async function checkRouterAndUnitInfoFromStore() {
+  if (unitFromRoute.value) {
+    const isOk = await checkUnitInfoResult(info.value, unitFromRoute.value);
+    if (!isOk) return;
+
+    $socket.emit(EventNames.GetUnit, { unit: unitFromRoute.value }, updDag);
+    return;
+  }
+  
+  getLastUnits();
 }
 
 function highlightNodeEmitHandler({ type, data }) {
@@ -106,15 +132,19 @@ setClickHandler((unit) => {
   router.push(`/${unit}`);
 });
 
-function resetUnit() {
+function resetState() {
   infoStore.setInfo({});
   infoStore.setReady(false);
   globalState.setLastUnit("");
-  router.push(`/`);
-  getLastUnits();
+}
+
+async function resetUnit() {
+  await router.push(`/`);
+  resetState();
 }
 
 function getLastUnits() {
+  resetState();
   $socket.emit(EventNames.GetLastUnits, updDag);
 }
 
@@ -140,19 +170,14 @@ watch(
     if (unitFromRoute.value) {
       highlightNode(unitFromRoute.value);
     } else {
-      resetUnit();
+      getLastUnits();
     }
   }
 );
 
 onMounted(() => {
   window.addEventListener("keydown", keyDown);
-  if (unitFromRoute.value) {
-    getUnitInfo(unitFromRoute.value);
-    $socket.emit(EventNames.GetUnit, { unit: unitFromRoute.value }, updDag);
-    return;
-  }
-  getLastUnits();
+  checkRouterAndUnitInfoFromStore();
 });
 
 

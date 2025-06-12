@@ -27,9 +27,7 @@ const { rates } = storeToRefs(useRatesStore());
 
 import fetchAddressInfo from "~/api/fetchAddressInfo";
 import AADescription from "~/components/address/AADescription.vue";
-import TIElement from "~/components/unit/TIElement.vue";
 
-const { $socket } = useNuxtApp();
 const { t } = useI18n();
 
 const router = useRouter();
@@ -154,8 +152,9 @@ async function urlHandler() {
   }
 
   isLoaded.value = false;
-  const result = await fetchAddressInfo($socket, route.params.address, params);
-  addressInfoHandler(result);
+  const { data: result } = await useAsyncData(`address:${route.params.address}`, () => fetchAddressInfo(route.params.address, params));
+  
+  addressInfoHandler(result.value);
 }
 
 async function getNextPage() {
@@ -163,7 +162,7 @@ async function getNextPage() {
   const params = prepareParamsForAddress(route, lastRowids);
 
   isNewPageLoaded.value = false;
-  const result = await fetchAddressInfo($socket, route.params.address, params);
+  const result = await fetchAddressInfo(route.params.address, params);
   if (result.notFound) return;
 
   nextPageHandler(result);
