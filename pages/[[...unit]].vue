@@ -3,23 +3,19 @@ import ContentForLegend from "~/components/elements/ContentForLegend.vue";
 import UnitInfo from "~/components/unit/UnitInfo.vue";
 import UnitMain from "~/components/unit/UnitMain.vue";
 
-import fetchUnitInfo from "~/api/fetchUnitInfo.js";
-import { useGlobalStateStore } from "~/stores/globalState.js";
+import fetchUnitInfo from "~/api/fetchUnitInfo";
+
 import { useInfoStore } from "~/stores/info.js";
+
 import { desc } from "~/configs/meta.js";
 import { normalizeUnit } from "~/helpers/normalizeUnit.js";
-import { prepareLink } from "~/helpers/prepareLink.js";
-
-const globalState = useGlobalStateStore();
-const infoStore = useInfoStore();
-
-const { info } = storeToRefs(infoStore);
-const { $socket } = useNuxtApp();
 
 const route = useRoute();
 
+const infoStore = useInfoStore();
+
 definePageMeta({
-  path: "/:unit+",
+  path: '/:unit(.*)*',
   name: "unit",
   keepalive: true,
   key: 'unit',
@@ -39,33 +35,14 @@ useHead({
   ],
 })
 
-async function getUnitInfo(unit) {
-  if (info && info.unit === unit) return;
 
-  const result = await fetchUnitInfo($socket, unit);
-  if (result.deleted) {
-    globalState.setLastUnit("");
-    // deletedHandler(unit);
-    // alertShown.value = true;
-    // setTimeout(hideAlert, 3000);
-    // await router.push(`/`);
-  } else {
-    globalState.setLastUnit(result.unit);
-  }
-  infoStore.setInfo(result);
+if (unitFromRoute.value) {
+  infoStore.setLoading(true);
+  const { data: result } = await useAsyncData(`unit`, () => fetchUnitInfo(unitFromRoute.value));
+
+  infoStore.setInfo(result.value);
   infoStore.setReady(true);
-}
-
-const getUnitInformation = async () => {  
-  if (unitFromRoute.value) {
-    let _unit = prepareLink(unitFromRoute.value);
-    
-    await getUnitInfo(_unit);
-  }
-}
-
-if (!process.client) {
-  await getUnitInformation();
+  infoStore.setLoading(false);
 }
 
 onMounted(() => {
@@ -82,9 +59,9 @@ onUnmounted(() => {
   <div id="scroll" class="right-0 xl:right-[34%] overscroll-none">
     <div id="scrollBody">&nbsp;</div>
   </div>
-  <ContentForLegend />
+  <ContentForLegend/>
   <ClientOnly>
-    <UnitMain />
+    <UnitMain/>
   </ClientOnly>
   <UnitInfo/>
 </template>
