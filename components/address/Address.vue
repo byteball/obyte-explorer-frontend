@@ -114,7 +114,10 @@ function addressInfoHandler(result) {
   nextPagesEnded.value = false;
   paramsForPie.value = [];
 
-  if (result.notFound) {
+  if (result?.notFound) {
+    const err = `For address: ${route.params.address}. Result:${result}`;
+    report(new Error(err));
+    
     notFound.value = true;
     isLoaded.value = true;
     return;
@@ -132,6 +135,10 @@ function addressInfoHandler(result) {
 }
 
 function nextPageHandler(data) {
+  if(!data) {
+    const err = `For next page in address: ${route.params.address}. Result:${data}`;
+    report(new Error(err));
+  }
   nextPagesEnded.value = data.end;
   lastRowids.value = {
     lastInputsROWID: data.newLastInputsROWID,
