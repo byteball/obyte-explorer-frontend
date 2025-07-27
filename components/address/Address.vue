@@ -114,10 +114,12 @@ function addressInfoHandler(result) {
   nextPagesEnded.value = false;
   paramsForPie.value = [];
 
-  if (result?.notFound) {
+  if (!result) {
     const err = `For address: ${route.params.address}. Result:${result}`;
     report(new Error(err));
-    
+  }
+  
+  if (result?.notFound) {
     notFound.value = true;
     isLoaded.value = true;
     return;
@@ -159,7 +161,9 @@ async function urlHandler() {
   }
 
   isLoaded.value = false;
-  const { data: result } = await useAsyncData(`address:${route.params.address}`, () => fetchAddressInfo(route.params.address, params));
+  
+  const key = `address:${route.params.address}:${route.query.asset || 'null'}`;
+  const { data: result } = await useAsyncData(key, () => fetchAddressInfo(route.params.address, params));
   
   addressInfoHandler(result.value);
 }
@@ -177,7 +181,9 @@ async function getNextPage() {
 
 await urlHandler();
 
-watch(() => [route.params.address, route.query.asset || "all"].join("_"), urlHandler);
+watch(() => [route.params.address, route.query.asset || "all"].join("_"), () => {
+  urlHandler();
+});
 
 watch(y, () => {
   if (
