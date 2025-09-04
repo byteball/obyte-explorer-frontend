@@ -73,6 +73,7 @@ async function getUnitInfo(unit) {
 
   infoStore.setLoading(true);
   const result = await fetchUnitInfo(unit);
+  if (!result) report(new Error(result));
 
   const isOk = await checkUnitInfoResult(result, unit);
 
