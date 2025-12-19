@@ -97,11 +97,12 @@ const rawJson = computed(() => {
 
 <style scoped>
 .aa-error-display {
-  @apply border border-gray-200 rounded-lg overflow-hidden bg-white;
+  @apply border border-gray-200 rounded-lg overflow-hidden bg-white w-full max-w-full;
 }
 
 .aa-error-display table {
   @apply border-collapse;
+  table-layout: fixed;
 }
 
 .error-label {
@@ -112,8 +113,9 @@ const rawJson = computed(() => {
 }
 
 .aa-error-display td {
-  @apply py-2 px-3 border-b border-gray-100 align-top;
+  @apply py-2 px-3 border-b border-gray-100 align-top overflow-hidden;
   word-wrap: break-word;
+  word-break: break-word;
 }
 
 .aa-error-display tr:last-child td,
@@ -126,7 +128,7 @@ const rawJson = computed(() => {
 }
 
 .error-xpath {
-  @apply text-green-700 font-mono text-xs;
+  @apply text-green-700 font-mono text-xs break-all;
 }
 
 .error-context {
@@ -138,7 +140,7 @@ const rawJson = computed(() => {
 }
 
 .chain-addr {
-  @apply text-blue-600 bg-blue-50 px-2 py-0.5 rounded;
+  @apply text-blue-600 bg-blue-50 px-2 py-0.5 rounded break-all;
 }
 
 .chain-arrow {
@@ -166,7 +168,7 @@ const rawJson = computed(() => {
 }
 
 .trace-item {
-  @apply flex items-center gap-2 py-1.5 px-2 bg-gray-50 border border-gray-200 rounded text-xs flex-wrap;
+  @apply flex items-start gap-2 py-1.5 px-2 bg-gray-50 border border-gray-200 rounded text-xs flex-wrap;
 }
 
 .trace-type {
@@ -178,11 +180,11 @@ const rawJson = computed(() => {
 }
 
 .trace-aa {
-  @apply text-blue-600 font-mono text-[11px];
+  @apply text-blue-600 font-mono text-[11px] break-all;
 }
 
 .trace-xpath {
-  @apply text-green-700 font-mono text-[11px];
+  @apply text-green-700 font-mono text-[11px] break-all;
 }
 
 .trace-name {
