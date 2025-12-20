@@ -1,9 +1,18 @@
 <script setup>
 import Link from "~/components/elements/Link.vue";
 import Payload from "~/components/elements/Payload.vue";
+import AAErrorDisplay from "~/components/transactions/AAErrorDisplay.vue";
 
 import { getDateFromSeconds } from "~/helpers/date";
 import { prettifyJson, parseJSONForResponse } from "~/helpers/text";
+import { useAAError } from "~/composables/useAAError";
+
+const { ERROR_TYPES, parseAAResponse } = useAAError();
+
+function hasAAError(response) {
+  const parsed = parseAAResponse(response.response);
+  return parsed.hasError && parsed.errorType !== ERROR_TYPES.UNKNOWN;
+}
 
 defineProps(["arrAaResponses"]);
 
@@ -57,7 +66,12 @@ const { t } = useI18n();
         </li>
         <li>
           {{ t("response") }}:
-          <Payload>{{ prettifyJson(parseJSONForResponse(response.response)) }}</Payload>
+          <AAErrorDisplay
+            v-if="hasAAError(response)"
+            :response="response.response"
+            class="mt-2"
+          />
+          <Payload v-else>{{ prettifyJson(parseJSONForResponse(response.response)) }}</Payload>
         </li>
       </ul>
     </div>
