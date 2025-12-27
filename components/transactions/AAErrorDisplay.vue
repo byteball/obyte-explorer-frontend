@@ -11,7 +11,6 @@ const props = defineProps({
   }
 });
 
-const router = useRouter();
 const { ERROR_TYPES, parseAAResponse } = useAAError();
 
 const errorData = computed(() => parseAAResponse(props.response));
@@ -23,6 +22,11 @@ const hasCodeLines = computed(() => errorData.value.details.codeLines?.length > 
 const hasTrace = computed(() => errorData.value.details.trace?.length > 0);
 const hasContext = computed(() => !!errorData.value.details.formattedContext);
 const hasAddresses = computed(() => errorData.value.details.addresses?.length > 0);
+
+const lastTrace = computed(() => {
+  const trace = errorData.value.details.trace;
+  return trace && trace.length > 0 ? trace[trace.length - 1] : null;
+});
 
 const rawJson = computed(() => {
   if (!errorData.value.details.raw) return '';
@@ -48,16 +52,34 @@ function getTraceUrl(trace, traceIndex, errorMessage) {
   return `/address/${address}${queryString ? '?' + queryString : ''}`;
 }
 
-function handleTraceClick(event, trace, traceIndex, errorMessage) {
-  if (event.ctrlKey || event.metaKey || event.button === 1) {
-    return;
-  }
+function getXpathUrl() {
+  if (!lastTrace.value) return null;
   
-  event.preventDefault();
-  const url = getTraceUrl(trace, traceIndex, errorMessage);
-  if (url) {
-    router.push(url);
-  }
+  const address = lastTrace.value.aa || getAddressForTrace(errorData.value.details.trace, errorData.value.details.trace.length - 1);
+  if (!address) return null;
+  
+  const params = new URLSearchParams();
+  if (lastTrace.value.xpath) params.set('xpath', lastTrace.value.xpath);
+  if (lastTrace.value.line) params.set('line', lastTrace.value.line);
+  if (errorData.value.message) params.set('error', errorData.value.message);
+  
+  const queryString = params.toString();
+  return `/address/${address}${queryString ? '?' + queryString : ''}`;
+}
+
+function getCodeLineUrl(lineNumber) {
+  if (!lastTrace.value) return null;
+  
+  const address = lastTrace.value.aa || getAddressForTrace(errorData.value.details.trace, errorData.value.details.trace.length - 1);
+  if (!address) return null;
+  
+  const params = new URLSearchParams();
+  if (lastTrace.value.xpath) params.set('xpath', lastTrace.value.xpath);
+  params.set('line', lineNumber);
+  if (errorData.value.message) params.set('error', errorData.value.message);
+  
+  const queryString = params.toString();
+  return `/address/${address}${queryString ? '?' + queryString : ''}`;
 }
 </script>
 
@@ -72,7 +94,16 @@ function handleTraceClick(event, trace, traceIndex, errorMessage) {
 
         <tr v-if="isXpath">
           <th class="error-label">XPath</th>
-          <td class="error-xpath">{{ errorData.details.xpath }}</td>
+          <td>
+            <NuxtLink 
+              v-if="getXpathUrl()"
+              :to="getXpathUrl()"
+              class="error-xpath error-xpath-link"
+            >
+              {{ errorData.details.xpath }}
+            </NuxtLink>
+            <span v-else class="error-xpath">{{ errorData.details.xpath }}</span>
+          </td>
         </tr>
 
         <tr v-if="isCallChain && hasAddresses">
@@ -96,10 +127,15 @@ function handleTraceClick(event, trace, traceIndex, errorMessage) {
           <th class="error-label">Code</th>
           <td>
             <div class="code-block">
-              <div v-for="line in errorData.details.codeLines" :key="line.lineNumber" class="code-line">
+              <NuxtLink 
+                v-for="line in errorData.details.codeLines" 
+                :key="line.lineNumber" 
+                :to="getCodeLineUrl(line.lineNumber)"
+                class="code-line code-line-clickable"
+              >
                 <span class="line-num">{{ line.lineNumber }}</span>
                 <span class="line-code">{{ line.formula }}</span>
-              </div>
+              </NuxtLink>
             </div>
           </td>
         </tr>
@@ -108,19 +144,18 @@ function handleTraceClick(event, trace, traceIndex, errorMessage) {
           <th class="error-label">Trace</th>
           <td>
             <div class="trace-list">
-              <a 
+              <NuxtLink 
                 v-for="(t, idx) in errorData.details.trace" 
                 :key="idx" 
-                :href="getTraceUrl(errorData.details.trace, idx, errorData.message)"
+                :to="getTraceUrl(errorData.details.trace, idx, errorData.message)"
                 class="trace-item trace-clickable"
-                @click="handleTraceClick($event, errorData.details.trace, idx, errorData.message)"
               >
                 <span :class="['trace-type', { fn: t.type === 'function' }]">{{ t.type }}</span>
                 <span v-if="t.aa" class="trace-aa">{{ t.aa }}</span>
                 <span class="trace-xpath">{{ t.xpath }}</span>
                 <span v-if="t.name" class="trace-name">{{ t.name }}</span>
                 <span v-if="t.line" class="trace-line">line {{ t.line }}</span>
-              </a>
+              </NuxtLink>
             </div>
           </td>
         </tr>
@@ -170,6 +205,14 @@ function handleTraceClick(event, trace, traceIndex, errorMessage) {
   @apply text-green-700 font-mono text-xs break-all;
 }
 
+.error-xpath-link {
+  @apply cursor-pointer transition-colors;
+}
+
+.error-xpath-link:hover {
+  @apply text-green-800 underline;
+}
+
 .error-context {
   @apply text-purple-600 font-mono text-xs whitespace-pre-wrap;
 }
@@ -192,6 +235,15 @@ function handleTraceClick(event, trace, traceIndex, errorMessage) {
 
 .code-line {
   @apply flex gap-3 font-mono text-xs leading-relaxed;
+}
+
+.code-line-clickable {
+  @apply cursor-pointer transition-colors;
+  color: rgb(31 41 55 / var(--tw-text-opacity, 1));
+}
+
+.code-line-clickable:hover {
+  @apply bg-gray-100;
 }
 
 .line-num {
