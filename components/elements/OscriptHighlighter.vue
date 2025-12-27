@@ -238,7 +238,6 @@ onBeforeUnmount(() => {
 }
 
 :deep(.code-line) {
-  padding: 0 0.5rem;
   min-height: 1.6em;
 }
 
