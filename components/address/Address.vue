@@ -1,16 +1,17 @@
 <script setup>
-import { useWindowScroll, useElementSize, useWindowSize } from "@vueuse/core";
-
-import { safePrettifyJson } from "~/helpers/text";
+import { prettifyJson } from "~/helpers/text";
 import { getAssetName } from "~/helpers/asset";
 import { prepareParamsForAddress } from "~/helpers/address";
+import { prepareDataForPieFromBalances } from "~/helpers/balances";
+import { findCodeBlockLine } from "~/helpers/definition";
+import { useInfiniteScroll } from "~/composables/useInfiniteScroll";
 
 import { useHead } from "@vueuse/head";
 import { desc } from "~/configs/meta";
 
 import Collapse from "~/components/elements/Collapse.vue";
 import Payload from "~/components/elements/Payload.vue";
-import AddLinksToAddresses from "~/components/elements/AddLinksToAddresses.vue";
+import OscriptHighlighter from "~/components/elements/OscriptHighlighter.vue";
 import Link from "~/components/elements/Link.vue";
 import BalancesChart from "~/components/elements/BalancesChart.vue";
 import PaymentList from "~/components/transactions/PaymentList.vue";
@@ -62,51 +63,17 @@ const PL = ref(null);
 const el = ref(null);
 const paramsForPie = ref([]);
 const showStatsLink = ref(false);
+const definitionCollapse = ref(null);
+const highlightLine = ref(null);
+const errorMessage = ref(null);
 
-const { height: wHeigth } = useWindowSize();
-const { height } = useElementSize(el);
-const { y } = useWindowScroll();
+const { shouldLoadMore } = useInfiniteScroll(el);
 
 
-function prepareDataForPieFromBalances(balances) {
-  let data = [];
-  let bytes = null;
-
-  if (!Object.keys(rates.value).length) return [];
-
-  for (let asset in balances) {
-    const balance = balances[asset].balance;
-    let decimals = balances[asset].assetDecimals || 0;
-    const assetName = balances[asset].assetName || "GBYTE";
-    if (asset === "bytes") {
-      asset = "GBYTE";
-      decimals = 9;
-    }
-    if (!rates.value[`${asset}_USD`]) continue;
-
-    let value = balance / 10 ** decimals;
-    value = Number((rates.value[`${asset}_USD`] * value).toFixed(2));
-
-    if (asset === "GBYTE") {
-      bytes = { value, name: "GBYTE" };
-      continue;
-    }
-    data.push({ value, name: assetName });
+function updatePieData() {
+  if (data.value?.objBalances) {
+    paramsForPie.value = prepareDataForPieFromBalances(data.value.objBalances, rates.value);
   }
-
-  data.sort((a, b) => {
-    return b.value - a.value;
-  });
-
-  if (!bytes && data.length) {
-    bytes = { value: 0, assetName: "GBYTE" };
-  }
-
-  if (bytes) {
-    data = [bytes, ...data];
-  }
-
-  return data;
 }
 
 function addressInfoHandler(result) {
@@ -127,13 +94,108 @@ function addressInfoHandler(result) {
 
   data.value = result;
   showStatsLink.value = !result.testnet && result.arrAaResponses !== undefined;
-  paramsForPie.value = prepareDataForPieFromBalances(result.objBalances);
+  updatePieData();
   lastRowids.value = {
     lastInputsROWID: result.newLastInputsROWID,
     lastOutputsROWID: result.newLastOutputsROWID,
   };
   notFound.value = false;
   isLoaded.value = true;
+
+  nextTick(() => {
+    handleDefinitionHighlight(result.definition, result.baseAaDefinition);
+  });
+}
+
+function handleDefinitionHighlight(definition, baseAaDefinition) {
+  const xpath = route.query.xpath;
+  const line = route.query.line ? parseInt(route.query.line, 10) : null;
+  const error = route.query.error;
+  
+  if (!xpath) {
+    highlightLine.value = null;
+    errorMessage.value = null;
+    return;
+  }
+
+  if (baseAaDefinition) {
+    const baseAaAddress = getBaseAaAddress(definition);
+    if (baseAaAddress) {
+      const query = { xpath, line };
+      if (error) query.error = error;
+      router.replace({
+        path: `/address/${baseAaAddress}`,
+        query
+      });
+      return;
+    }
+  }
+
+  if (!definition) {
+    highlightLine.value = null;
+    errorMessage.value = null;
+    return;
+  }
+
+  const calculatedLine = findCodeBlockLine(definition, xpath, line);
+  highlightLine.value = calculatedLine;
+  errorMessage.value = error || null;
+
+  if (calculatedLine !== null) {
+    openDefinitionAndScroll();
+  }
+}
+
+function getBaseAaAddress(definition) {
+  if (!definition) return null;
+  try {
+    const parsed = JSON.parse(definition);
+    if (Array.isArray(parsed) && parsed[1]?.base_aa) {
+      return parsed[1].base_aa;
+    }
+  } catch {
+    return null;
+  }
+  return null;
+}
+
+function openDefinitionAndScroll() {
+  const tryOpen = () => {
+    if (definitionCollapse.value) {
+      definitionCollapse.value.setOpen(true);
+      nextTick(() => {
+        scrollToHighlightedLine();
+      });
+    } else {
+      setTimeout(tryOpen, 50);
+    }
+  };
+  tryOpen();
+}
+
+function scrollToHighlightedLine() {
+  const tryScrollToElement = (attempt = 0, maxAttempts = 20) => {
+    nextTick(() => {
+      const highlightedEl = document.querySelector('.code-line.highlighted');
+      if (highlightedEl) {
+        highlightedEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      } else if (attempt < maxAttempts) {
+        setTimeout(() => tryScrollToElement(attempt + 1, maxAttempts), 100);
+      }
+    });
+  };
+
+  if (document.hidden) {
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        document.removeEventListener('visibilitychange', handleVisibilityChange);
+        setTimeout(tryScrollToElement, 100);
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+  } else {
+    tryScrollToElement();
+  }
 }
 
 function nextPageHandler(data) {
@@ -185,22 +247,14 @@ watch(() => [route.params.address, route.query.asset || "all"].join("_"), () => 
   urlHandler();
 });
 
-watch(y, () => {
-  if (
-    isLoaded.value &&
-    isNewPageLoaded.value &&
-    y.value + wHeigth.value + 100 >= height.value &&
-    !notFound.value
-  ) {
-    getNextPage();
+watch(
+  () => shouldLoadMore(isLoaded.value, isNewPageLoaded.value, notFound.value),
+  (shouldLoad) => {
+    if (shouldLoad && !nextPagesEnded.value) {
+      getNextPage();
+    }
   }
-});
-
-watch(height, () => {
-  if (isLoaded.value && isNewPageLoaded.value && height.value < wHeigth.value && !notFound.value) {
-    getNextPage();
-  }
-});
+);
 
 watch(filter, () => {
   if (filter.value !== route.query.asset) {
@@ -208,11 +262,7 @@ watch(filter, () => {
   }
 });
 
-watch(rates, () => {
-  if (data.value) {
-    paramsForPie.value = prepareDataForPieFromBalances(data.value.objBalances);
-  }
-});
+watch(rates, updatePieData);
 
 function back() {
   if (lastUnit.value) {
@@ -256,13 +306,18 @@ function back() {
         <div class="block lg:flex">
           <div class="flex-auto">
             <Collapse
+              ref="definitionCollapse"
               class="pt-1.5"
               v-if="data.definition"
               :title="t('labelDefinition')"
               :closed="true"
             >
               <Payload>
-                <AddLinksToAddresses :text="safePrettifyJson(JSON.parse(data.definition))" />
+                <OscriptHighlighter 
+                  :text="prettifyJson(JSON.parse(data.definition))" 
+                  :highlight-line="highlightLine"
+                  :error-message="errorMessage"
+                />
               </Payload>
             </Collapse>
             <Collapse
@@ -350,5 +405,3 @@ function back() {
     </div>
   </div>
 </template>
-
-<style scoped></style>

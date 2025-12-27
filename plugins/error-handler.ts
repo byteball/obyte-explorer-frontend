@@ -9,6 +9,7 @@ export default defineNuxtPlugin((nuxtApp) => {
 
   // Also possible
   nuxtApp.hook('vue:error', (error, instance, info) => {
+    console.error(error);
     if (error instanceof Error) {
       const e = new Error(error.message)
       e.stack = error.stack || '';

@@ -2,6 +2,7 @@
 import Link from "~/components/elements/Link.vue";
 import { useAAError } from "~/composables/useAAError";
 import { prettifyJson } from "~/helpers/text";
+import { getAddressForTrace } from "~/helpers/definition";
 
 const props = defineProps({
   response: {
@@ -10,6 +11,7 @@ const props = defineProps({
   }
 });
 
+const router = useRouter();
 const { ERROR_TYPES, parseAAResponse } = useAAError();
 
 const errorData = computed(() => parseAAResponse(props.response));
@@ -26,6 +28,37 @@ const rawJson = computed(() => {
   if (!errorData.value.details.raw) return '';
   return prettifyJson(errorData.value.details.raw);
 });
+
+function getTraceUrl(trace, traceIndex, errorMessage) {
+  const traceItem = trace[traceIndex];
+  const address = traceItem.aa || getAddressForTrace(trace, traceIndex);
+  
+  if (!address) return null;
+  
+  const params = new URLSearchParams();
+  if (traceItem.xpath) params.set('xpath', traceItem.xpath);
+  if (traceItem.line) params.set('line', traceItem.line);
+  
+  const isLastTrace = traceIndex === trace.length - 1;
+  if (isLastTrace && errorMessage) {
+    params.set('error', errorMessage);
+  }
+  
+  const queryString = params.toString();
+  return `/address/${address}${queryString ? '?' + queryString : ''}`;
+}
+
+function handleTraceClick(event, trace, traceIndex, errorMessage) {
+  if (event.ctrlKey || event.metaKey || event.button === 1) {
+    return;
+  }
+  
+  event.preventDefault();
+  const url = getTraceUrl(trace, traceIndex, errorMessage);
+  if (url) {
+    router.push(url);
+  }
+}
 </script>
 
 <template>
@@ -75,13 +108,19 @@ const rawJson = computed(() => {
           <th class="error-label">Trace</th>
           <td>
             <div class="trace-list">
-              <div v-for="(t, idx) in errorData.details.trace" :key="idx" class="trace-item">
+              <a 
+                v-for="(t, idx) in errorData.details.trace" 
+                :key="idx" 
+                :href="getTraceUrl(errorData.details.trace, idx, errorData.message)"
+                class="trace-item trace-clickable"
+                @click="handleTraceClick($event, errorData.details.trace, idx, errorData.message)"
+              >
                 <span :class="['trace-type', { fn: t.type === 'function' }]">{{ t.type }}</span>
-                <Link v-if="t.aa" :type="'address'" :link="t.aa" class="trace-aa">{{ t.aa }}</Link>
+                <span v-if="t.aa" class="trace-aa">{{ t.aa }}</span>
                 <span class="trace-xpath">{{ t.xpath }}</span>
                 <span v-if="t.name" class="trace-name">{{ t.name }}</span>
                 <span v-if="t.line" class="trace-line">line {{ t.line }}</span>
-              </div>
+              </a>
             </div>
           </td>
         </tr>
@@ -169,6 +208,14 @@ const rawJson = computed(() => {
 
 .trace-item {
   @apply flex items-start gap-2 py-1.5 px-2 bg-gray-50 border border-gray-200 rounded text-xs flex-wrap;
+}
+
+.trace-clickable {
+  @apply cursor-pointer transition-colors;
+}
+
+.trace-clickable:hover {
+  @apply bg-blue-50 border-blue-300;
 }
 
 .trace-type {
