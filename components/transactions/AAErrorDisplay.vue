@@ -33,53 +33,38 @@ const rawJson = computed(() => {
   return prettifyJson(errorData.value.details.raw);
 });
 
-function getTraceUrl(trace, traceIndex, errorMessage) {
-  const traceItem = trace[traceIndex];
-  const address = traceItem.aa || getAddressForTrace(trace, traceIndex);
-  
+function buildAddressUrl(address, xpath, line, includeError = false) {
   if (!address) return null;
   
   const params = new URLSearchParams();
-  if (traceItem.xpath) params.set('xpath', traceItem.xpath);
-  if (traceItem.line) params.set('line', traceItem.line);
-  
-  const isLastTrace = traceIndex === trace.length - 1;
-  if (isLastTrace && errorMessage) {
-    params.set('error', errorMessage);
-  }
+  if (xpath) params.set('xpath', xpath);
+  if (line) params.set('line', line);
+  if (includeError && errorData.value.message) params.set('error', errorData.value.message);
   
   const queryString = params.toString();
   return `/address/${address}${queryString ? '?' + queryString : ''}`;
+}
+
+function getTraceUrl(trace, traceIndex, errorMessage) {
+  const traceItem = trace[traceIndex];
+  const address = traceItem.aa || getAddressForTrace(trace, traceIndex);
+  const isLastTrace = traceIndex === trace.length - 1;
+  
+  return buildAddressUrl(address, traceItem.xpath, traceItem.line, isLastTrace);
 }
 
 function getXpathUrl() {
   if (!lastTrace.value) return null;
   
   const address = lastTrace.value.aa || getAddressForTrace(errorData.value.details.trace, errorData.value.details.trace.length - 1);
-  if (!address) return null;
-  
-  const params = new URLSearchParams();
-  if (lastTrace.value.xpath) params.set('xpath', lastTrace.value.xpath);
-  if (lastTrace.value.line) params.set('line', lastTrace.value.line);
-  if (errorData.value.message) params.set('error', errorData.value.message);
-  
-  const queryString = params.toString();
-  return `/address/${address}${queryString ? '?' + queryString : ''}`;
+  return buildAddressUrl(address, lastTrace.value.xpath, lastTrace.value.line, true);
 }
 
 function getCodeLineUrl(lineNumber) {
   if (!lastTrace.value) return null;
   
   const address = lastTrace.value.aa || getAddressForTrace(errorData.value.details.trace, errorData.value.details.trace.length - 1);
-  if (!address) return null;
-  
-  const params = new URLSearchParams();
-  if (lastTrace.value.xpath) params.set('xpath', lastTrace.value.xpath);
-  params.set('line', lineNumber);
-  if (errorData.value.message) params.set('error', errorData.value.message);
-  
-  const queryString = params.toString();
-  return `/address/${address}${queryString ? '?' + queryString : ''}`;
+  return buildAddressUrl(address, lastTrace.value.xpath, lineNumber, true);
 }
 </script>
 
