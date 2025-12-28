@@ -246,9 +246,8 @@ function getCodeLineUrl(lineNumber) {
   @apply cursor-pointer transition-colors;
   color: rgb(31 41 55 / var(--tw-text-opacity, 1));
 }
-
 .code-line-clickable:hover {
-  @apply bg-gray-100;
+  @apply underline;
 }
 
 .line-num {
