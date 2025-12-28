@@ -138,13 +138,13 @@ function renderTokens(tokens) {
         case "string":
           const inner = token.value.slice(1, -1);
           if (inner.startsWith("http://") || inner.startsWith("https://")) {
-            return `<span class="os-string">${token.value[0]}<a href="${inner}" class="os-url" target="_blank" rel="noopener noreferrer">${escapeHtml(inner)}</a>${token.value[token.value.length - 1]}</span>`;
+            return `<span class="os-string">${token.value[0]}<a href="${inner}" class="os-link" target="_blank" rel="noopener noreferrer">${escapeHtml(inner)}</a>${token.value[token.value.length - 1]}</span>`;
           }
           return `<span class="os-string">${escaped}</span>`;
         case "json-key":
           return `<span class="os-json-key">${escaped}</span>`;
         case "address-string":
-          return `<span class="os-string">${token.quote}<a class="addr os-address" href="/address/${token.address}">${token.address}</a>${token.quote}</span>`;
+          return `<span class="os-string">${token.quote}<a class="addr os-link" href="/address/${token.address}">${token.address}</a>${token.quote}</span>`;
         case "formula":
           return `<span class="os-formula-bracket">${token.quote}{</span>${renderFormula(token.inner)}<span class="os-formula-bracket">}${token.quote}</span>`;
         case "variable":
@@ -160,7 +160,7 @@ function renderTokens(tokens) {
         case "operator":
           return `<span class="os-operator">${escaped}</span>`;
         case "address":
-          return `<a class="addr os-address" href="/address/${token.value}">${escaped}</a>`;
+          return `<a class="addr os-link" href="/address/${token.value}">${escaped}</a>`;
         default:
           return escaped;
       }
@@ -190,7 +190,7 @@ function highlightCode(text) {
       let result = '';
       if (isHighlighted && props.errorMessage) {
         const indent = getLeadingWhitespace(line);
-        result += `<div class="error-message-line">${escapeHtml(indent)}// Error: ${escapeHtml(props.errorMessage)}</div>`;
+        result += `<div class="error-message-line">${escapeHtml(indent)}Error: ${escapeHtml(props.errorMessage)}</div>`;
       }
       result += `<div class="code-line${isHighlighted ? " highlighted" : ""}" data-line="${lineNum}">${highlighted || " "}</div>`;
       return result;
@@ -244,14 +244,15 @@ onBeforeUnmount(() => {
 :deep(.code-line.highlighted) {
   background-color: rgba(255, 255, 0, 0.15);
   border-left: 3px solid #ffd700;
-  padding-left: calc(0.5rem - 3px);
+  margin-left: -3px;
 }
 
 :deep(.error-message-line) {
   background-color: rgba(239, 68, 68, 0.1);
+  border: 2px solid #ef4444;
   border-left: 3px solid #ef4444;
-  padding: 0.25rem 0.5rem;
-  padding-left: calc(0.5rem - 3px);
+  padding: 0.35rem 0;
+  margin: 6px 0px 2px -3px;
   color: #dc2626;
   font-style: italic;
 }
@@ -273,16 +274,6 @@ onBeforeUnmount(() => {
 :deep(.os-json-key) {
   color: #0550ae;
   font-weight: normal;
-}
-
-:deep(.os-url) {
-  color: #3b82f6;
-  text-decoration: underline;
-  cursor: pointer;
-}
-
-:deep(.os-url:hover) {
-  color: #2563eb;
 }
 
 :deep(.os-number) {
@@ -311,13 +302,13 @@ onBeforeUnmount(() => {
   font-weight: bold;
 }
 
-:deep(.os-address) {
+:deep(.os-link) {
   color: #3b82f6; 
   text-decoration: none;
   cursor: pointer;
 }
 
-:deep(.os-address:hover) {
+:deep(.os-link:hover) {
   color: #2563eb;
   text-decoration: underline;
 }
