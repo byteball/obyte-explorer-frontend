@@ -33,7 +33,7 @@ const { t } = useI18n();
         </div>
         <div v-else>{{ t("from") }} {{ response.aa_address }}</div>
       </div>
-      <div v-if="response.timestamp" class="mt-2 sm:mt-0">
+      <div v-if="response.timestamp" class="mt-2 sm:mt-0" data-allow-mismatch>
         {{ getDateFromSeconds(response.timestamp) }}
       </div>
     </div>

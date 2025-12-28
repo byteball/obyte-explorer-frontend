@@ -263,7 +263,7 @@ function getCodeLineUrl(lineNumber) {
   @apply mt-1 space-y-1;
 }
 
-.trace-list:hover :is(.trace-aa, .trace-xpath, .trace-line, .trace-name) {
+.trace-item:hover > :is(.trace-aa, .trace-xpath, .trace-line, .trace-name) {
   @apply underline;
 }
 
