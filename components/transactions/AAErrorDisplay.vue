@@ -8,6 +8,10 @@ const props = defineProps({
   response: {
     type: [String, Object],
     required: true
+  },
+  aaAddress: {
+    type: String,
+    default: null
   }
 });
 
@@ -54,17 +58,33 @@ function getTraceUrl(trace, traceIndex, errorMessage) {
 }
 
 function getXpathUrl() {
-  if (!lastTrace.value) return null;
+  let address = props.aaAddress;
+  let xpath = errorData.value.details.xpath;
+  let line = null;
   
-  const address = lastTrace.value.aa || getAddressForTrace(errorData.value.details.trace, errorData.value.details.trace.length - 1);
-  return buildAddressUrl(address, lastTrace.value.xpath, lastTrace.value.line, true);
+  if (lastTrace.value) {
+    address = lastTrace.value.aa || getAddressForTrace(errorData.value.details.trace, errorData.value.details.trace.length - 1);
+    xpath = lastTrace.value.xpath;
+    line = lastTrace.value.line;
+  }
+  
+  if (!address) return null;
+  
+  return buildAddressUrl(address, xpath, line, true);
 }
 
 function getCodeLineUrl(lineNumber) {
-  if (!lastTrace.value) return null;
+  let address = props.aaAddress;
+  let xpath = errorData.value.details.xpath;
   
-  const address = lastTrace.value.aa || getAddressForTrace(errorData.value.details.trace, errorData.value.details.trace.length - 1);
-  return buildAddressUrl(address, lastTrace.value.xpath, lineNumber, true);
+  if (lastTrace.value) {
+    address = lastTrace.value.aa || getAddressForTrace(errorData.value.details.trace, errorData.value.details.trace.length - 1);
+    xpath = lastTrace.value.xpath;
+  }
+  
+  if (!address) return null;
+  
+  return buildAddressUrl(address, xpath, lineNumber, true);
 }
 </script>
 
@@ -243,16 +263,16 @@ function getCodeLineUrl(lineNumber) {
   @apply mt-1 space-y-1;
 }
 
+.trace-list:hover :is(.trace-aa, .trace-xpath, .trace-line, .trace-name) {
+  @apply underline;
+}
+
 .trace-item {
   @apply flex items-start gap-2 py-1.5 px-2 bg-gray-50 border border-gray-200 rounded text-xs flex-wrap;
 }
 
 .trace-clickable {
   @apply cursor-pointer transition-colors;
-}
-
-.trace-clickable:hover {
-  @apply bg-blue-50 border-blue-300;
 }
 
 .trace-type {

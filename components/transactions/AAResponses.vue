@@ -69,6 +69,7 @@ const { t } = useI18n();
           <AAErrorDisplay
             v-if="hasAAError(response)"
             :response="response.response"
+            :aa-address="response.aa_address"
             class="mt-2"
           />
           <Payload v-else>{{ prettifyJson(parseJSONForResponse(response.response)) }}</Payload>
