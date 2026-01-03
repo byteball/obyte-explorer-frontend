@@ -33,7 +33,7 @@ const { t } = useI18n();
         </div>
         <div v-else>{{ t("from") }} {{ response.aa_address }}</div>
       </div>
-      <div v-if="response.timestamp" class="mt-2 sm:mt-0">
+      <div v-if="response.timestamp" class="mt-2 sm:mt-0" data-allow-mismatch>
         {{ getDateFromSeconds(response.timestamp) }}
       </div>
     </div>
@@ -69,6 +69,7 @@ const { t } = useI18n();
           <AAErrorDisplay
             v-if="hasAAError(response)"
             :response="response.response"
+            :aa-address="response.aa_address"
             class="mt-2"
           />
           <Payload v-else>{{ prettifyJson(parseJSONForResponse(response.response)) }}</Payload>

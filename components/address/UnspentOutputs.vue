@@ -1,11 +1,16 @@
 <script setup>
 import { getAssetName } from "~/helpers/asset.js";
 
-import Collapse from "../../components/elements/Collapse.vue";
-import Link from "../../components/elements/Link.vue";
-import FormatAmount from "../../components/FormatAmount.vue";
+import Collapse from "~/components/elements/Collapse.vue";
+import Link from "~/components/elements/Link.vue";
+import FormatAmount from "~/components/FormatAmount.vue";
 
-defineProps(["unspent"]);
+defineProps({
+  unspent: {
+    type: Array,
+    default: () => []
+  }
+});
 
 const { t } = useI18n();
 </script>
@@ -23,5 +28,3 @@ const { t } = useI18n();
     </div>
   </Collapse>
 </template>
-
-<style scoped></style>

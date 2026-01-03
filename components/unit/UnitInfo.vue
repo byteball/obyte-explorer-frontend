@@ -21,13 +21,50 @@ const { rates } = storeToRefs(useRatesStore());
 
 const { t } = useI18n();
 const { width } = useWindowSize();
+const route = useRoute();
 
 const isHidden = ref(false);
 const maxWidth = ref("auto");
+const infoContainerRef = ref(null);
+
+const SCROLL_STORAGE_KEY = 'unitinfo-sp';
+
+function saveScrollPosition() {
+  if (!import.meta.client) return;
+  const container = infoContainerRef.value;
+  if (container && route.params.unit) {
+    const scrollTop = container.scrollTop;
+    sessionStorage.setItem(`${SCROLL_STORAGE_KEY}-${route.params.unit}`, scrollTop.toString());
+  }
+}
+
+function restoreScrollPosition() {
+  if (!import.meta.client) return;
+  const savedScroll = sessionStorage.getItem(`${SCROLL_STORAGE_KEY}-${route.params.unit}`);
+  if (savedScroll && infoContainerRef.value) {
+    nextTick(() => {
+      if (infoContainerRef.value) {
+        infoContainerRef.value.scrollTop = parseInt(savedScroll, 10);
+        sessionStorage.removeItem(`${SCROLL_STORAGE_KEY}-${route.params.unit}`);
+      }
+    });
+  }
+}
 
 watch(info, () => {
   isHidden.value = false;
 });
+
+onMounted(() => {
+  restoreScrollPosition();
+});
+
+onBeforeRouteLeave((to, from) => {
+  if (to.path.startsWith('/address/')) {
+    saveScrollPosition();
+  }
+});
+
 
 watch(
   width,
@@ -46,6 +83,7 @@ function hide() {
 
 <template>
   <div
+    ref="infoContainerRef"
     class="w-full xl:w-[34%] xl:block top-32 sm:top-24 lg:top-16 !border-0 sm:!border"
     id="info"
     :class="{ hidden: isHidden || !info.unit }"

@@ -2,11 +2,16 @@
 import Link from "~/components/elements/Link.vue";
 import { useAAError } from "~/composables/useAAError";
 import { prettifyJson } from "~/helpers/text";
+import { getAddressForTrace } from "~/helpers/definition";
 
 const props = defineProps({
   response: {
     type: [String, Object],
     required: true
+  },
+  aaAddress: {
+    type: String,
+    default: null
   }
 });
 
@@ -22,10 +27,65 @@ const hasTrace = computed(() => errorData.value.details.trace?.length > 0);
 const hasContext = computed(() => !!errorData.value.details.formattedContext);
 const hasAddresses = computed(() => errorData.value.details.addresses?.length > 0);
 
+const lastTrace = computed(() => {
+  const trace = errorData.value.details.trace;
+  return trace && trace.length > 0 ? trace[trace.length - 1] : null;
+});
+
 const rawJson = computed(() => {
   if (!errorData.value.details.raw) return '';
   return prettifyJson(errorData.value.details.raw);
 });
+
+function buildAddressUrl(address, xpath, line, includeError = false) {
+  if (!address) return null;
+  
+  const params = new URLSearchParams();
+  if (xpath) params.set('xpath', xpath);
+  if (line) params.set('line', line);
+  if (includeError && errorData.value.message) params.set('error', errorData.value.message);
+  
+  const queryString = params.toString();
+  return `/address/${address}${queryString ? '?' + queryString : ''}`;
+}
+
+function getTraceUrl(trace, traceIndex, errorMessage) {
+  const traceItem = trace[traceIndex];
+  const address = traceItem.aa || getAddressForTrace(trace, traceIndex);
+  const isLastTrace = traceIndex === trace.length - 1;
+  
+  return buildAddressUrl(address, traceItem.xpath, traceItem.line, isLastTrace);
+}
+
+function getXpathUrl() {
+  let address = props.aaAddress;
+  let xpath = errorData.value.details.xpath;
+  let line = null;
+  
+  if (lastTrace.value) {
+    address = lastTrace.value.aa || getAddressForTrace(errorData.value.details.trace, errorData.value.details.trace.length - 1);
+    xpath = lastTrace.value.xpath;
+    line = lastTrace.value.line;
+  }
+  
+  if (!address) return null;
+  
+  return buildAddressUrl(address, xpath, line, true);
+}
+
+function getCodeLineUrl(lineNumber) {
+  let address = props.aaAddress;
+  let xpath = errorData.value.details.xpath;
+  
+  if (lastTrace.value) {
+    address = lastTrace.value.aa || getAddressForTrace(errorData.value.details.trace, errorData.value.details.trace.length - 1);
+    xpath = lastTrace.value.xpath;
+  }
+  
+  if (!address) return null;
+  
+  return buildAddressUrl(address, xpath, lineNumber, true);
+}
 </script>
 
 <template>
@@ -39,7 +99,16 @@ const rawJson = computed(() => {
 
         <tr v-if="isXpath">
           <th class="error-label">XPath</th>
-          <td class="error-xpath">{{ errorData.details.xpath }}</td>
+          <td>
+            <NuxtLink 
+              v-if="getXpathUrl()"
+              :to="getXpathUrl()"
+              class="error-xpath error-xpath-link"
+            >
+              {{ errorData.details.xpath }}
+            </NuxtLink>
+            <span v-else class="error-xpath">{{ errorData.details.xpath }}</span>
+          </td>
         </tr>
 
         <tr v-if="isCallChain && hasAddresses">
@@ -63,10 +132,15 @@ const rawJson = computed(() => {
           <th class="error-label">Code</th>
           <td>
             <div class="code-block">
-              <div v-for="line in errorData.details.codeLines" :key="line.lineNumber" class="code-line">
+              <NuxtLink 
+                v-for="line in errorData.details.codeLines" 
+                :key="line.lineNumber" 
+                :to="getCodeLineUrl(line.lineNumber)"
+                class="code-line code-line-clickable"
+              >
                 <span class="line-num">{{ line.lineNumber }}</span>
                 <span class="line-code">{{ line.formula }}</span>
-              </div>
+              </NuxtLink>
             </div>
           </td>
         </tr>
@@ -75,13 +149,18 @@ const rawJson = computed(() => {
           <th class="error-label">Trace</th>
           <td>
             <div class="trace-list">
-              <div v-for="(t, idx) in errorData.details.trace" :key="idx" class="trace-item">
+              <NuxtLink 
+                v-for="(t, idx) in errorData.details.trace" 
+                :key="idx" 
+                :to="getTraceUrl(errorData.details.trace, idx, errorData.message)"
+                class="trace-item trace-clickable"
+              >
                 <span :class="['trace-type', { fn: t.type === 'function' }]">{{ t.type }}</span>
-                <Link v-if="t.aa" :type="'address'" :link="t.aa" class="trace-aa">{{ t.aa }}</Link>
+                <span v-if="t.aa" class="trace-aa">{{ t.aa }}</span>
                 <span class="trace-xpath">{{ t.xpath }}</span>
                 <span v-if="t.name" class="trace-name">{{ t.name }}</span>
                 <span v-if="t.line" class="trace-line">line {{ t.line }}</span>
-              </div>
+              </NuxtLink>
             </div>
           </td>
         </tr>
@@ -131,6 +210,14 @@ const rawJson = computed(() => {
   @apply text-green-700 font-mono text-xs break-all;
 }
 
+.error-xpath-link {
+  @apply cursor-pointer transition-colors;
+}
+
+.error-xpath-link:hover {
+  @apply text-green-800 underline;
+}
+
 .error-context {
   @apply text-purple-600 font-mono text-xs whitespace-pre-wrap;
 }
@@ -155,6 +242,14 @@ const rawJson = computed(() => {
   @apply flex gap-3 font-mono text-xs leading-relaxed;
 }
 
+.code-line-clickable {
+  @apply cursor-pointer transition-colors;
+  color: rgb(31 41 55 / var(--tw-text-opacity, 1));
+}
+.code-line-clickable:hover {
+  @apply underline;
+}
+
 .line-num {
   @apply text-gray-400 min-w-[24px] text-right select-none;
 }
@@ -167,8 +262,16 @@ const rawJson = computed(() => {
   @apply mt-1 space-y-1;
 }
 
+.trace-item:hover > :is(.trace-aa, .trace-xpath, .trace-line, .trace-name) {
+  @apply underline;
+}
+
 .trace-item {
   @apply flex items-start gap-2 py-1.5 px-2 bg-gray-50 border border-gray-200 rounded text-xs flex-wrap;
+}
+
+.trace-clickable {
+  @apply cursor-pointer transition-colors;
 }
 
 .trace-type {

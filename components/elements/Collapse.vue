@@ -12,6 +12,12 @@ const open = ref(!props.closed);
 function toggle() {
   open.value = !open.value;
 }
+
+function setOpen(value) {
+  open.value = value;
+}
+
+defineExpose({ open, setOpen });
 </script>
 
 <template>

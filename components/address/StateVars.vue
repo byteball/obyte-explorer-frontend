@@ -1,9 +1,18 @@
 <script setup>
 import { prettifyJson, parseJSONForStateVars } from "~/helpers/text.js";
 
-import Payload from "../elements/Payload.vue";
+import Payload from "~/components/elements/Payload.vue";
 
-const props = defineProps(["stateVars", "storageSize"]);
+const props = defineProps({
+  stateVars: {
+    type: Object,
+    required: true
+  },
+  storageSize: {
+    type: Number,
+    default: 0
+  }
+});
 
 const MAX_DISPLAYED = 30;
 
@@ -12,45 +21,36 @@ const filter = ref("");
 const vars = ref([]);
 const objStateVarsLength = ref(0);
 
-let i = 0;
-function updVars() {
-  i = 0;
-  const v = [];
-  objStateVarsLength.value = Object.keys(props.stateVars).length;
+function updateVars() {
+  const entries = Object.entries(props.stateVars);
+  objStateVarsLength.value = entries.length;
 
-  for (let key in props.stateVars) {
-    if (i === MAX_DISPLAYED) {
-      break;
-    }
-
-    const value = String(props.stateVars[key]);
-    if (!filter.value || key.includes(filter.value) || value.includes(filter.value)) {
-      const result = {
-        key,
-      };
+  const filtered = entries
+    .filter(([key, val]) => {
+      if (!filter.value) return true;
+      const value = String(val);
+      return key.includes(filter.value) || value.includes(filter.value);
+    })
+    .slice(0, MAX_DISPLAYED)
+    .map(([key, val]) => {
+      const value = String(val);
       try {
-        result.type = "json";
-        result.value = prettifyJson(parseJSONForStateVars(value));
-      } catch (e) {
-        result.type = "text";
-        result.value = value;
+        return {
+          key,
+          type: "json",
+          value: prettifyJson(parseJSONForStateVars(value))
+        };
+      } catch {
+        return { key, type: "text", value };
       }
+    });
 
-      v.push(result);
-      i++;
-    }
-  }
-
-  vars.value = v;
+  vars.value = filtered;
 }
 
-watch(filter, () => {
-  updVars();
-});
+watch(filter, updateVars);
 
-onMounted(() => {
-  updVars();
-});
+onMounted(updateVars);
 </script>
 
 <template>
@@ -75,5 +75,3 @@ onMounted(() => {
   </ul>
   <div class="py-4">{{ t("storageSize") }}: {{ storageSize }} bytes</div>
 </template>
-
-<style scoped></style>

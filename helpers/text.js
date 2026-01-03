@@ -12,9 +12,9 @@ export function safePrettifyJson(json_object) {
 }
 
 export function prettifyJson(json_object) {
-  return JSON.stringify(json_object, null, "    ")
+  return JSON.stringify(json_object, null, "  ")
     .replace(/\\n/g, "\n")
-    .replace(/\\t/g, "    ")
+    .replace(/\\t/g, "  ")
     .replace(/\\"/g, '"')
     .replace(/\\\\/g, "\\");
 }

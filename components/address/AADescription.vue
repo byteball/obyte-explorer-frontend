@@ -1,5 +1,14 @@
 <script setup>
-const props = defineProps(["definition", "baseAaDefinition"]);
+const props = defineProps({
+  definition: {
+    type: String,
+    default: ''
+  },
+  baseAaDefinition: {
+    type: String,
+    default: ''
+  }
+});
 
 const aaDescription = ref('');
 const aaHomepageUrl = ref('');
@@ -37,7 +46,8 @@ const checkAndSetAaDescription = async () => {
         await fetchAndSetAaDescription(baseAaDefinition[1].doc_url);
       }
     }
-  } catch (e) {
+  } catch {
+    
   }
 }
 
