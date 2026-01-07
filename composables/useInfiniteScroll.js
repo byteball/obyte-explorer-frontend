@@ -1,33 +1,33 @@
-import { useWindowScroll, useElementSize, useWindowSize } from "@vueuse/core";
+import { useScroll, useElementSize } from "@vueuse/core";
 import { computed } from "vue";
 
-export function useInfiniteScroll(elementRef, options = {}) {
+export function useInfiniteScroll(scrollContainerRef, contentRef, options = {}) {
   const { threshold = 100 } = options;
 
-  const { height: windowHeight } = useWindowSize();
-  const { height: elementHeight} = useElementSize(elementRef);
-  const { y: scrollY } = useWindowScroll();
+  const { height: containerHeight } = useElementSize(scrollContainerRef);
+  const { height: contentHeight } = useElementSize(contentRef);
+  const { y: scrollY } = useScroll(scrollContainerRef);
 
   const isNearBottom = computed(() => {
-    return scrollY.value + windowHeight.value + threshold >= elementHeight.value;
+    return scrollY.value + containerHeight.value + threshold >= contentHeight.value;
   });
 
-  const isContentShorterThanWindow = computed(() => {
-    return elementHeight.value < windowHeight.value;
+  const isContentShorterThanContainer = computed(() => {
+    return contentHeight.value <= containerHeight.value;
   });
 
   function shouldLoadMore(isLoaded, isNewPageLoaded, hasError) {
     if (!isLoaded || !isNewPageLoaded || hasError) return false;
-    return isNearBottom.value || isContentShorterThanWindow.value;
+    return isNearBottom.value || isContentShorterThanContainer.value;
   }
 
 
   return {
-    windowHeight,
-    elementHeight,
+    containerHeight,
+    contentHeight,
     scrollY,
     isNearBottom,
-    isContentShorterThanWindow,
+    isContentShorterThanContainer,
     shouldLoadMore,
   };
 }

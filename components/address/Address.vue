@@ -60,14 +60,15 @@ const isNewPageLoaded = ref(true);
 const nextPagesEnded = ref(false);
 const filter = ref("all");
 const PL = ref(null);
-const el = ref(null);
+const scrollContainer = ref(null);
+const contentEl = ref(null);
 const paramsForPie = ref([]);
 const showStatsLink = ref(false);
 const definitionCollapse = ref(null);
 const highlightLine = ref(null);
 const errorMessage = ref(null);
 
-const { shouldLoadMore } = useInfiniteScroll(el);
+const { shouldLoadMore } = useInfiniteScroll(scrollContainer, contentEl);
 
 
 function updatePieData() {
@@ -274,8 +275,8 @@ function back() {
 </script>
 
 <template>
-  <div class="w-full bg-white absolute h-full p-1 sm:p-4 pt-4" style="z-index: 1100">    
-    <div class="max-w-6xl mx-auto w-full text-sm md:text-base" ref="el">
+  <div class="w-full bg-white absolute h-full p-1 sm:p-4 pt-4 overflow-auto" style="z-index: 1100" ref="scrollContainer">    
+    <div class="max-w-6xl mx-auto w-full text-sm md:text-base" ref="contentEl">
       <div class="text-right pr-4">
         <a @click="back" class="link link-hover text-blue-500">{{ t("closeButton") }}</a>
       </div>
