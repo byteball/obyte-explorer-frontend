@@ -34,21 +34,6 @@ const { t } = useI18n();
 const router = useRouter();
 const route = useRoute();
 
-const title = (route.params.address ? 
-    `Address ${route.params.address} transactions and portfolio | ` : '') + 
-    desc;
-
-useHead({
-  title: title,
-  meta: [
-    { name: "description", content: title },
-    { name: "og:title", content: title },
-    { name: "og:description", content: title },
-    { name: "twitter:title", content: title },
-    { name: "twitter:description", content: title },
-  ],
-})
-
 const isLoaded = ref(false);
 const data = ref({});
 const notFound = ref(false);
@@ -68,10 +53,34 @@ const definitionCollapse = ref(null);
 const highlightLine = ref(null);
 const errorMessage = ref(null);
 
-const { truncatedDescription, aaHomepageUrl, aaSourceUrl } = useAaDescription(
+const {
+  aaDescription,
+  aaHomepageUrl,
+  aaSourceUrl,
+  fetchAaDescription,
+} = useAaDescription(
   computed(() => data.value?.definition),
   computed(() => data.value?.baseAaDefinition)
 );
+
+const seoTitle = computed(() => {
+  return (
+    (route.params.address
+      ? `Address ${route.params.address} ${aaDescription.value || desc} | transactions and portfolio`
+      : "")
+  );
+});
+
+const seoDescription = computed(() => aaDescription.value || desc);
+
+useSeoMeta({
+  title: () => seoTitle.value,
+  ogTitle: () => seoTitle.value,
+  twitterTitle: () => seoTitle.value,
+  description: () => seoDescription.value,
+  ogDescription: () => seoDescription.value,
+  twitterDescription: () => seoDescription.value,
+});
 
 const { shouldLoadMore } = useInfiniteScroll(scrollContainer, contentEl);
 
@@ -82,7 +91,7 @@ function updatePieData() {
   }
 }
 
-function addressInfoHandler(result) {
+async function addressInfoHandler(result) {
   isNewPageLoaded.value = true;
   nextPagesEnded.value = false;
   paramsForPie.value = [];
@@ -100,6 +109,7 @@ function addressInfoHandler(result) {
 
   data.value = result;
   showStatsLink.value = !result.testnet && result.arrAaResponses !== undefined;
+  await fetchAaDescription();
   updatePieData();
   lastRowids.value = {
     lastInputsROWID: result.newLastInputsROWID,
@@ -278,7 +288,7 @@ async function urlHandler() {
   const key = `address:${route.params.address}:${route.query.asset || 'null'}`;
   const { data: result } = await useAsyncData(key, () => fetchAddressInfo(route.params.address, params));
   
-  addressInfoHandler(result.value);
+  await addressInfoHandler(result.value);
 }
 
 async function getNextPage() {
@@ -354,7 +364,7 @@ function back() {
       <div v-else-if="isLoaded">
         <div class="mt-10 font-bold flex items-center flex-wrap">
           <span>{{ data.address }}</span> <Clipboard class="h-5 ml-2" :text="data.address" />
-          <span v-if="truncatedDescription" class="ml-2 font-normal text-gray-600">- {{ truncatedDescription }}</span>
+          
         </div>
         <div v-if="showStatsLink" class="font-normal text-sm">
           <a
@@ -363,6 +373,9 @@ function back() {
             class="link link-hover text-blue-500"
             >View Autonomous Agent stats (TVL, turnover)
           </a>
+        </div>
+        <div v-if="aaDescription" class="mt-1">
+          {{ aaDescription }}
         </div>
         <div v-if="aaHomepageUrl || aaSourceUrl" class="mt-1 text-sm space-x-2">
           <a
