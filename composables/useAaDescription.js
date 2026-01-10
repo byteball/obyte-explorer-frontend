@@ -1,4 +1,4 @@
-import { computed, ref, watch } from "vue";
+import { ref, watch } from "vue";
 
 export function useAaDescription(definitionRef, baseDefinitionRef) {
   const aaDescription = ref("");
@@ -34,14 +34,6 @@ export function useAaDescription(definitionRef, baseDefinitionRef) {
     }
   };
 
-  const truncatedDescription = computed(() => {
-    if (!aaDescription.value) return "";
-    const maxLength = 100;
-    return aaDescription.value.length > maxLength
-      ? aaDescription.value.substring(0, maxLength) + "..."
-      : aaDescription.value;
-  });
-
   watch(
     () => [definitionRef?.value, baseDefinitionRef?.value],
     () => fetchAaDescription(),
@@ -52,7 +44,6 @@ export function useAaDescription(definitionRef, baseDefinitionRef) {
     aaDescription,
     aaHomepageUrl,
     aaSourceUrl,
-    truncatedDescription,
     fetchAaDescription,
   };
 }
