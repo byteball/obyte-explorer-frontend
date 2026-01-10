@@ -66,7 +66,7 @@ const {
 const seoTitle = computed(() => {
   return (
     (route.params.address
-      ? `Address ${route.params.address} ${aaDescription.value || desc} | transactions and portfolio`
+      ? `Address ${route.params.address} ${aaDescription.value || ""} | transactions and portfolio`
       : "")
   );
 });
