@@ -1,57 +1,22 @@
 <script setup>
+import { computed } from "vue";
+import { useAaDescription } from "~/composables/useAaDescription";
+
 const props = defineProps({
   definition: {
     type: String,
-    default: ''
+    default: '',
   },
   baseAaDefinition: {
     type: String,
-    default: ''
-  }
+    default: '',
+  },
 });
 
-const aaDescription = ref('');
-const aaHomepageUrl = ref('');
-const aaSourceUrl = ref('');
-
-const fetchAndSetAaDescription = async (docUrl) => {
-  const aaDoc = await $fetch(docUrl);
-
-  if (aaDoc.description) {
-    aaDescription.value = aaDoc.description;
-  }
-
-  if (aaDoc.homepage_url) {
-    aaHomepageUrl.value = aaDoc.homepage_url;
-  }
-
-  if (aaDoc.source_url) {
-    aaSourceUrl.value = aaDoc.source_url;
-  }
-}
-
-const checkAndSetAaDescription = async () => {
-  try {
-    const definition = JSON.parse(props.definition);
-
-    if (definition[1].doc_url) {
-      await fetchAndSetAaDescription(definition[1].doc_url);
-      return;
-    }
-
-    if (props.baseAaDefinition) {
-      const baseAaDefinition = JSON.parse(props.baseAaDefinition);
-
-      if (baseAaDefinition[1].doc_url) {
-        await fetchAndSetAaDescription(baseAaDefinition[1].doc_url);
-      }
-    }
-  } catch {
-    
-  }
-}
-
-await checkAndSetAaDescription();
+const { aaDescription, aaHomepageUrl, aaSourceUrl } = useAaDescription(
+  computed(() => props.definition),
+  computed(() => props.baseAaDefinition)
+);
 </script>
 
 <template>
