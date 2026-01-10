@@ -14,6 +14,8 @@ import Payload from "~/components/elements/Payload.vue";
 import OscriptHighlighter from "~/components/elements/OscriptHighlighter.vue";
 import Link from "~/components/elements/Link.vue";
 import BalancesChart from "~/components/elements/BalancesChart.vue";
+import Clipboard from "~/components/elements/Clipboard.vue";
+import { useAaDescription } from "~/composables/useAaDescription";
 import PaymentList from "~/components/transactions/PaymentList.vue";
 import AAResponses from "~/components/transactions/AAResponses.vue";
 import Spinner from "~/components/icons/Spinner.vue";
@@ -27,8 +29,6 @@ const { lastUnit, view } = storeToRefs(useGlobalStateStore());
 const { rates } = storeToRefs(useRatesStore());
 
 import fetchAddressInfo from "~/api/fetchAddressInfo";
-import AADescription from "~/components/address/AADescription.vue";
-
 const { t } = useI18n();
 
 const router = useRouter();
@@ -67,6 +67,11 @@ const showStatsLink = ref(false);
 const definitionCollapse = ref(null);
 const highlightLine = ref(null);
 const errorMessage = ref(null);
+
+const { truncatedDescription, aaHomepageUrl, aaSourceUrl } = useAaDescription(
+  computed(() => data.value?.definition),
+  computed(() => data.value?.baseAaDefinition)
+);
 
 const { shouldLoadMore } = useInfiniteScroll(scrollContainer, contentEl);
 
@@ -113,16 +118,17 @@ function handleDefinitionHighlight(definition, baseAaDefinition) {
   const line = route.query.line ? parseInt(route.query.line, 10) : null;
   const error = route.query.error;
   
-  if (!xpath) {
+  if (!xpath && !line) {
     highlightLine.value = null;
     errorMessage.value = null;
     return;
   }
 
-  if (baseAaDefinition) {
+  if (baseAaDefinition && xpath) {
     const baseAaAddress = getBaseAaAddress(definition);
     if (baseAaAddress) {
-      const query = { xpath, line };
+      const query = { xpath };
+      if (line) query.line = line;
       if (error) query.error = error;
       router.replace({
         path: `/address/${baseAaAddress}`,
@@ -138,7 +144,13 @@ function handleDefinitionHighlight(definition, baseAaDefinition) {
     return;
   }
 
-  const calculatedLine = findCodeBlockLine(definition, xpath, line);
+  let calculatedLine;
+  if (xpath) {
+    calculatedLine = findCodeBlockLine(definition, xpath, line);
+  } else {
+    calculatedLine = line;
+  }
+  
   highlightLine.value = calculatedLine;
   errorMessage.value = error || null;
 
@@ -164,9 +176,9 @@ function openDefinitionAndScroll() {
   const tryOpen = () => {
     if (definitionCollapse.value) {
       definitionCollapse.value.setOpen(true);
-      nextTick(() => {
+      setTimeout(() => {
         scrollToHighlightedLine();
-      });
+      }, 1500);
     } else {
       setTimeout(tryOpen, 50);
     }
@@ -175,28 +187,66 @@ function openDefinitionAndScroll() {
 }
 
 function scrollToHighlightedLine() {
-  const tryScrollToElement = (attempt = 0, maxAttempts = 20) => {
-    nextTick(() => {
-      const highlightedEl = document.querySelector('.code-line.highlighted');
-      if (highlightedEl) {
-        highlightedEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      } else if (attempt < maxAttempts) {
-        setTimeout(() => tryScrollToElement(attempt + 1, maxAttempts), 100);
-      }
-    });
+  const maxAttempts = 60;
+  const attemptDelay = 100;
+
+  const waitForHighlighted = async () => {
+    for (let i = 0; i < maxAttempts; i++) {
+      await nextTick();
+      const el = document.querySelector('.code-row.highlighted');
+      if (el) return el;
+      await new Promise((resolve) => setTimeout(resolve, attemptDelay));
+    }
+    return null;
+  };
+
+  const scrollToEl = (el, container) => {
+    const elRect = el.getBoundingClientRect();
+    const containerRect = container.getBoundingClientRect();
+    const target = elRect.top - containerRect.top + container.scrollTop - (container.clientHeight / 2) + (el.offsetHeight / 2);
+    container.scrollTo({ top: Math.max(0, target), behavior: 'smooth' });
+  };
+
+  const scroll = async () => {
+    const highlightedEl = await waitForHighlighted();
+    if (!highlightedEl) return;
+
+    const container = scrollContainer.value;
+    if (!container) return;
+
+    scrollToEl(highlightedEl, container);
   };
 
   if (document.hidden) {
     const handleVisibilityChange = () => {
       if (!document.hidden) {
         document.removeEventListener('visibilitychange', handleVisibilityChange);
-        setTimeout(tryScrollToElement, 100);
+        setTimeout(scroll, 100);
       }
     };
     document.addEventListener('visibilitychange', handleVisibilityChange);
   } else {
-    tryScrollToElement();
+    scroll();
   }
+}
+
+function handleLineClick(lineNum, event) {
+  const newQuery = { ...route.query };
+  
+  if (newQuery.error) {
+    delete newQuery.error;
+  }
+  
+  if (newQuery.xpath) {
+    delete newQuery.xpath;
+  }
+  
+  newQuery.line = String(lineNum);
+  
+  router.replace({ query: newQuery });
+  
+  highlightLine.value = lineNum;
+  errorMessage.value = null;
 }
 
 function nextPageHandler(data) {
@@ -265,6 +315,21 @@ watch(filter, () => {
 
 watch(rates, updatePieData);
 
+watch(
+  () => route.query.line,
+  (newLine) => {
+    if (newLine !== undefined && data.value?.definition) {
+      const lineNum = parseInt(newLine, 10);
+      if (!isNaN(lineNum) && lineNum !== highlightLine.value) {
+        highlightLine.value = lineNum;
+        if (!route.query.error) {
+          errorMessage.value = null;
+        }
+      }
+    }
+  }
+);
+
 function back() {
   if (lastUnit.value) {
     return router.push({ path: "/" + lastUnit.value });
@@ -287,8 +352,9 @@ function back() {
         No transactions were found for this address
       </div>
       <div v-else-if="isLoaded">
-        <div class="mt-10 font-bold">
-          {{ data.address }}
+        <div class="mt-10 font-bold flex items-center flex-wrap">
+          <span>{{ data.address }}</span> <Clipboard class="h-5 ml-2" :text="data.address" />
+          <span v-if="truncatedDescription" class="ml-2 font-normal text-gray-600">- {{ truncatedDescription }}</span>
         </div>
         <div v-if="showStatsLink" class="font-normal text-sm">
           <a
@@ -298,12 +364,24 @@ function back() {
             >View Autonomous Agent stats (TVL, turnover)
           </a>
         </div>
-        <ClientOnly>
-          <AADescription
-            :definition="data.definition"
-            :baseAaDefinition="data.baseAaDefinition"
-          />
-        </ClientOnly>
+        <div v-if="aaHomepageUrl || aaSourceUrl" class="mt-1 text-sm space-x-2">
+          <a
+            v-if="aaHomepageUrl"
+            class="link link-hover text-blue-500"
+            :href="aaHomepageUrl"
+            target="_blank"
+            rel="noopener noreferrer"
+            >Home page</a
+          >
+          <a
+            v-if="aaSourceUrl"
+            class="link link-hover text-blue-500"
+            :href="aaSourceUrl"
+            target="_blank"
+            rel="noopener noreferrer"
+            >Source</a
+          >
+        </div>
         <div class="block lg:flex">
           <div class="flex-auto">
             <Collapse
@@ -318,6 +396,7 @@ function back() {
                   :text="prettifyJson(JSON.parse(data.definition))" 
                   :highlight-line="highlightLine"
                   :error-message="errorMessage"
+                  @line-click="handleLineClick"
                 />
               </Payload>
             </Collapse>

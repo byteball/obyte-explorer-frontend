@@ -11,6 +11,7 @@ const props = defineProps({
   },
 });
 
+const emit = defineEmits(['line-click']);
 const router = useRouter();
 
 const oscriptKeywords = new Set([
@@ -178,24 +179,32 @@ function getLeadingWhitespace(str) {
   return match ? match[1] : '';
 }
 
-function highlightCode(text) {
+function processLines(text) {
   const lines = text.split("\n");
-  return lines
-    .map((line, index) => {
-      const lineNum = index + 1;
-      const tokens = tokenize(line);
-      const highlighted = renderTokens(tokens);
-      const isHighlighted = props.highlightLine === lineNum;
-      
-      let result = '';
-      if (isHighlighted && props.errorMessage) {
-        const indent = getLeadingWhitespace(line);
-        result += `<div class="error-message-line">${escapeHtml(indent)}Error: ${escapeHtml(props.errorMessage)}</div>`;
-      }
-      result += `<div class="code-line${isHighlighted ? " highlighted" : ""}" data-line="${lineNum}">${highlighted || " "}</div>`;
-      return result;
-    })
-    .join("");
+  return lines.map((line, index) => {
+    const lineNum = index + 1;
+    const tokens = tokenize(line);
+    const highlighted = renderTokens(tokens);
+    const isHighlighted = props.highlightLine === lineNum;
+    
+    return {
+      lineNum,
+      content: highlighted || ' ',
+      isHighlighted,
+      hasError: isHighlighted && props.errorMessage,
+      errorIndent: isHighlighted && props.errorMessage ? getLeadingWhitespace(line) : '',
+    };
+  });
+}
+
+const processedLines = computed(() => processLines(props.text));
+const lineNumberWidth = computed(() => {
+  const maxLine = processedLines.value.length;
+  return Math.max(2, String(maxLine).length);
+});
+
+function handleLineClick(lineNum, event) {
+  emit('line-click', lineNum, event);
 }
 
 function handleClick(event) {
@@ -216,19 +225,55 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <pre class="oscript-code"><code v-html="highlightCode(text)"></code></pre>
+  <div class="oscript-wrapper">
+    <table class="oscript-code">
+      <tbody>
+        <template v-for="line in processedLines" :key="line.lineNum">
+          <tr v-if="line.hasError" class="error-row">
+            <td class="line-gutter error-gutter"></td>
+            <td class="error-message-line">
+              <span v-html="escapeHtml(line.errorIndent)"></span>Error: {{ errorMessage }}
+            </td>
+          </tr>
+          <tr 
+            class="code-row" 
+            :class="{ highlighted: line.isHighlighted }"
+            :data-line="line.lineNum"
+          >
+            <td 
+              class="line-gutter" 
+              :class="{ highlighted: line.isHighlighted }"
+              :style="{ width: lineNumberWidth + 'ch' }"
+              @click="handleLineClick(line.lineNum, $event)"
+              :title="`Line ${line.lineNum}`"
+            >
+              {{ line.lineNum }}
+            </td>
+            <td 
+              class="line-content code-line" 
+              :class="{ highlighted: line.isHighlighted }"
+              v-html="line.content"
+            ></td>
+          </tr>
+        </template>
+      </tbody>
+    </table>
+  </div>
 </template>
 
 <style scoped>
+.oscript-wrapper {
+  overflow-x: auto;
+}
+
 .oscript-code {
   font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
   font-size: 0.875rem;
   line-height: 1.6;
   margin: 0;
   padding: 0;
-  white-space: pre-wrap;
-  word-wrap: break-word;
-  word-break: break-word;
+  border-collapse: collapse;
+  width: 100%;
 }
 
 @media (max-width: 768px) {
@@ -237,24 +282,81 @@ onBeforeUnmount(() => {
   }
 }
 
-:deep(.code-line) {
+.code-row {
+  transition: background-color 0.15s ease;
+}
+
+.code-row:hover {
+  background-color: rgba(0, 0, 0, 0.02);
+}
+
+.code-row.highlighted {
+  background-color: rgba(255, 255, 0, 0.15);
+}
+
+.line-gutter {
+  padding: 0 0.5rem 0 0.25rem;
+  text-align: right;
+  color: #9ca3af;
+  user-select: none;
+  cursor: pointer;
+  vertical-align: top;
+  white-space: nowrap;
+  border-right: 1px solid #e5e7eb;
+  transition: all 0.15s ease;
+  position: sticky;
+  left: 0;
+}
+
+.line-gutter:hover {
+  color: #3b82f6;
+}
+
+.line-gutter.highlighted {
+  border-right-color: #ffd700;
+  color: #d97706;
+  font-weight: 600;
+}
+
+.line-content {
+  padding: 0 0 0 0.5rem;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  word-break: break-word;
   min-height: 1.6em;
 }
 
-:deep(.code-line.highlighted) {
-  background-color: rgba(255, 255, 0, 0.15);
-  border-left: 3px solid #ffd700;
-  margin-left: -3px;
+.line-content.highlighted {
+  position: relative;
 }
 
-:deep(.error-message-line) {
+.line-content.highlighted::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background-color: #ffd700;
+}
+
+.error-row {
+  background-color: rgba(239, 68, 68, 0.05);
+}
+
+.error-gutter {
+  background-color: rgba(239, 68, 68, 0.1);
+  border-right-color: #ef4444;
+}
+
+.error-message-line {
   background-color: rgba(239, 68, 68, 0.1);
   border: 2px solid #ef4444;
   border-left: 3px solid #ef4444;
-  padding: 0.35rem 0;
-  margin: 6px 0px 2px -3px;
+  padding: 0.35rem 0.75rem;
   color: #dc2626;
   font-style: italic;
+  white-space: pre-wrap;
 }
 
 :deep(.os-keyword) {
