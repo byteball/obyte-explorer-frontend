@@ -64,10 +64,11 @@ const {
 );
 
 const seoTitle = computed(() => {
+  const aaDesc = aaDescription.value ? ` ${aaDescription.value}` : "";
   return (
-    (route.params.address
-      ? `Address ${route.params.address} ${aaDescription.value || ""} | transactions and portfolio`
-      : "")
+    (route.params.address ? 
+    `Address ${route.params.address}${aaDesc}, transactions and portfolio | ` : '') + 
+    desc
   );
 });
 
