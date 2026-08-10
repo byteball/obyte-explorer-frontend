@@ -365,7 +365,10 @@ function back() {
       <div v-else-if="isLoaded">
         <div class="mt-10 font-bold flex items-center flex-wrap">
           <span>{{ data.address }}</span> <Clipboard class="h-5 ml-2" :text="data.address" />
-          
+          <span v-if="data.definitionUnit" class="ml-2 font-normal">
+            - view on
+            <Link :type="'unit'" :link="data.definitionUnit">{{ t("labelDefinition").toLowerCase() }}</Link>
+          </span>
         </div>
         <div v-if="showStatsLink" class="font-normal text-sm">
           <a
