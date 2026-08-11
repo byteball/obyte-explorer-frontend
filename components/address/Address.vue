@@ -3,6 +3,7 @@ import { prettifyJson } from "~/helpers/text";
 import { getAssetName } from "~/helpers/asset";
 import { prepareParamsForAddress } from "~/helpers/address";
 import { prepareDataForPieFromBalances } from "~/helpers/balances";
+import { getDateOnlyFromSeconds } from "~/helpers/date";
 import { findCodeBlockLine } from "~/helpers/definition";
 import { useInfiniteScroll } from "~/composables/useInfiniteScroll";
 
@@ -365,9 +366,11 @@ function back() {
       <div v-else-if="isLoaded">
         <div class="mt-10 font-bold flex items-center flex-wrap">
           <span>{{ data.address }}</span> <Clipboard class="h-5 ml-2" :text="data.address" />
-          <span v-if="data.definitionUnit" class="ml-2 font-normal">
-            - view on
-            <Link :type="'unit'" :link="data.definitionUnit">{{ t("labelDefinition").toLowerCase() }}</Link>
+        </div>
+        <div v-if="data.definitionUnit" class="font-normal text-sm">
+          <Link :type="'unit'" :link="data.definitionUnit">defined</Link>
+          <span v-if="data.definitionTimestamp" data-allow-mismatch>
+            on {{ getDateOnlyFromSeconds(data.definitionTimestamp) }}
           </span>
         </div>
         <div v-if="showStatsLink" class="font-normal text-sm">
