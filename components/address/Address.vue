@@ -373,6 +373,15 @@ function back() {
             on {{ getDateOnlyFromSeconds(data.definitionTimestamp) }}
           </span>
         </div>
+        <div v-else class="font-normal text-sm">
+          <a
+            :href="'https://obyte.io/@' + data.address + '/attestations'"
+            target="_blank"
+            rel="noopener"
+            class="link link-hover text-blue-500"
+            >View attestations
+          </a>
+        </div>
         <div v-if="showStatsLink" class="font-normal text-sm">
           <a
             :href="'https://aa-stats.obyte.org/address/' + data.address"
