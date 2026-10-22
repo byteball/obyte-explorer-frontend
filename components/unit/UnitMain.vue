@@ -60,7 +60,7 @@ async function checkUnitInfoResult(result, unit) {
     deletedHandler(unit);
     alertShown.value = true;
     setTimeout(hideAlert, 3000);
-    await router.push(`/`);
+    await router.replace(`/`);
     return false;
   }
 
@@ -79,7 +79,7 @@ async function getUnitInfo(unit) {
 
   if (!isOk) {
     infoStore.setLoading(false);
-    resetUnit();
+    resetState();
     return;
   }
 
