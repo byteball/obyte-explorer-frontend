@@ -1,13 +1,12 @@
 <script setup>
 import { prettifyJson } from "~/helpers/text";
 import { getAssetName } from "~/helpers/asset";
-import { prepareParamsForAddress } from "~/helpers/address";
 import { prepareDataForPieFromBalances } from "~/helpers/balances";
 import { getDateOnlyFromSeconds } from "~/helpers/date";
 import { findCodeBlockLine } from "~/helpers/definition";
-import { useInfiniteScroll } from "~/composables/useInfiniteScroll";
+import { prepareLink } from "~/helpers/prepareLink";
+import { useElementSize, useScroll } from "@vueuse/core";
 
-import { useHead } from "@vueuse/head";
 import { desc } from "~/configs/meta";
 
 import Collapse from "~/components/elements/Collapse.vue";
@@ -16,7 +15,7 @@ import OscriptHighlighter from "~/components/elements/OscriptHighlighter.vue";
 import Link from "~/components/elements/Link.vue";
 import BalancesChart from "~/components/elements/BalancesChart.vue";
 import Clipboard from "~/components/elements/Clipboard.vue";
-import { useAaDescription } from "~/composables/useAaDescription";
+import AADescription from "~/components/address/AADescription.vue";
 import PaymentList from "~/components/transactions/PaymentList.vue";
 import AAResponses from "~/components/transactions/AAResponses.vue";
 import Spinner from "~/components/icons/Spinner.vue";
@@ -26,53 +25,119 @@ import StateVars from "~/components/address/StateVars.vue";
 
 import { useGlobalStateStore } from "~/stores/globalState";
 import { useRatesStore } from "~/stores/rates";
+import fetchAddressInfo from "~/api/fetchAddressInfo";
+
+const AA_ADDRESS_RE = /^[A-Z2-7]{32}$/;
+
 const { lastUnit, view } = storeToRefs(useGlobalStateStore());
 const { rates } = storeToRefs(useRatesStore());
-
-import fetchAddressInfo from "~/api/fetchAddressInfo";
 const { t } = useI18n();
-
 const router = useRouter();
 const route = useRoute();
 
 const isLoaded = ref(false);
 const data = ref({});
 const notFound = ref(false);
-const lastRowids = ref({
-  lastInputsROWID: 0,
-  lastOutputsROWID: 0,
-});
-const isNewPageLoaded = ref(true);
+const isLoadingMore = ref(false);
 const nextPagesEnded = ref(false);
-const filter = ref("all");
+const nextPageError = ref(false);
+
 const PL = ref(null);
 const scrollContainer = ref(null);
 const contentEl = ref(null);
-const paramsForPie = ref([]);
-const showStatsLink = ref(false);
 const definitionCollapse = ref(null);
-const highlightLine = ref(null);
-const errorMessage = ref(null);
+const aaDoc = ref(null);
 
-const {
-  aaDescription,
-  aaHomepageUrl,
-  aaSourceUrl,
-  fetchAaDescription,
-} = useAaDescription(
-  computed(() => data.value?.definition),
-  computed(() => data.value?.baseAaDefinition)
-);
+let pageCursor = null;
+let addressRequest = null;
+let skipScrollForLine = null;
 
-const seoTitle = computed(() => {
-  const aaDesc = aaDescription.value ? ` ${aaDescription.value}` : "";
-  return (
-    (route.params.address ? 
-    `Address ${route.params.address}${aaDesc}, transactions and portfolio | ` : '') + 
-    desc
+onBeforeUnmount(() => addressRequest?.abort());
+
+const filter = computed({
+  get: () => route.query.asset || "all",
+  set: (asset) => {
+    if (asset !== filter.value) router.push({ query: { asset } });
+  },
+});
+
+const paramsForPie = computed(() => prepareDataForPieFromBalances(data.value.objBalances, rates.value));
+const showStatsLink = computed(() => !data.value.testnet && data.value.arrAaResponses !== undefined);
+
+const definition = computed(() => {
+  if (!data.value.definition) return null;
+  try {
+    return JSON.parse(data.value.definition);
+  } catch {
+    return null;
+  }
+});
+const definitionText = computed(() => (definition.value ? prettifyJson(definition.value) : ""));
+
+const xpath = computed(() => (typeof route.query.xpath === "string" ? route.query.xpath : ""));
+const requestedLine = computed(() => {
+  const n = typeof route.query.line === "string" ? Number(route.query.line) : 0;
+  return Number.isSafeInteger(n) && n > 0 ? n : null;
+});
+const errorMessage = computed(() => (typeof route.query.error === "string" ? route.query.error : null));
+
+const baseAaAddress = computed(() => {
+  if (!isLoaded.value || notFound.value || !xpath.value || !data.value.baseAaDefinition) return null;
+  const base = definition.value?.[1]?.base_aa;
+  return typeof base === "string" && AA_ADDRESS_RE.test(base) && base !== route.params.address ? base : null;
+});
+
+const highlightLine = computed(() => {
+  if (!isLoaded.value || notFound.value || !definitionText.value || baseAaAddress.value) return null;
+  return xpath.value
+    ? findCodeBlockLine(definition.value, xpath.value, requestedLine.value)
+    : requestedLine.value;
+});
+
+function handleLineClick(lineNum) {
+  skipScrollForLine = lineNum;
+  const { error, xpath, ...query } = route.query;
+  router.replace({ query: { ...query, line: String(lineNum) } });
+}
+
+onMounted(() => {
+  watch(
+    [baseAaAddress, highlightLine, definitionCollapse, errorMessage, () => route.fullPath],
+    async ([baseAddress, line, collapse, error], _, onCleanup) => {
+      if (baseAddress) {
+        const query = { xpath: xpath.value };
+        if (requestedLine.value) query.line = String(requestedLine.value);
+        if (error) query.error = error;
+        router.replace({ path: `/address/${baseAddress}`, query });
+        return;
+      }
+      if (!line || !collapse) return;
+      if (skipScrollForLine === line && !xpath.value && !error) {
+        skipScrollForLine = null;
+        return;
+      }
+      skipScrollForLine = null;
+
+      let active = true;
+      onCleanup(() => { active = false; });
+      collapse.setOpen(true);
+      await nextTick();
+      const container = scrollContainer.value;
+      const row = container?.querySelector(`.code-row[data-line="${line}"]`);
+      if (!active || !row) return;
+      const target = row.getBoundingClientRect().top - container.getBoundingClientRect().top
+        + container.scrollTop - (container.clientHeight - row.offsetHeight) / 2;
+      container.scrollTo({ top: Math.max(0, target), behavior: "smooth" });
+    },
+    { immediate: true, flush: "post" }
   );
 });
 
+const aaDescription = computed(() => aaDoc.value?.aaDescription || "");
+const seoTitle = computed(() => {
+  const suffix = aaDescription.value ? ` ${aaDescription.value}` : "";
+  return (route.params.address ? `Address ${route.params.address}${suffix}, transactions and portfolio | ` : "") + desc;
+});
 const seoDescription = computed(() => aaDescription.value || desc);
 
 useSeoMeta({
@@ -84,270 +149,114 @@ useSeoMeta({
   twitterDescription: () => seoDescription.value,
 });
 
-const { shouldLoadMore } = useInfiniteScroll(scrollContainer, contentEl);
+async function loadAddress(initial = false) {
+  addressRequest?.abort();
+  const address = route.params.address;
+  if (!address) return;
 
+  const controller = new AbortController();
+  addressRequest = controller;
+  const params = { asset: route.query.asset || undefined };
 
-function updatePieData() {
-  if (data.value?.objBalances) {
-    paramsForPie.value = prepareDataForPieFromBalances(data.value.objBalances, rates.value);
+  isLoaded.value = false;
+  isLoadingMore.value = false;
+  nextPageError.value = false;
+
+  const fetcher = () => fetchAddressInfo(address, params, { signal: controller.signal });
+  let result;
+  try {
+    if (initial) {
+      const { data: asyncResult } = await useAsyncData(`address:${address}:${params.asset || "null"}`, fetcher);
+      result = asyncResult.value;
+    } else {
+      result = await fetcher();
+    }
+  } catch (err) {
+    if (!controller.signal.aborted) console.error(err);
   }
-}
 
-async function addressInfoHandler(result) {
-  isNewPageLoaded.value = true;
-  nextPagesEnded.value = false;
-  paramsForPie.value = [];
+  if (controller.signal.aborted) return;
 
-  if (!result) {
-    const err = `For address: ${route.params.address}. Result:${result}`;
-    report(new Error(err));
-  }
-  
-  if (result?.notFound) {
+  if (!result || result.notFound) {
     notFound.value = true;
+    nextPagesEnded.value = true;
     isLoaded.value = true;
     return;
   }
 
   data.value = result;
-  showStatsLink.value = !result.testnet && result.arrAaResponses !== undefined;
-  await fetchAaDescription();
-  updatePieData();
-  lastRowids.value = {
+  pageCursor = {
     lastInputsROWID: result.newLastInputsROWID,
     lastOutputsROWID: result.newLastOutputsROWID,
   };
   notFound.value = false;
+  nextPagesEnded.value = Boolean(result.end);
   isLoaded.value = true;
-
-  nextTick(() => {
-    handleDefinitionHighlight(result.definition, result.baseAaDefinition);
-  });
-}
-
-function handleDefinitionHighlight(definition, baseAaDefinition) {
-  const xpath = route.query.xpath;
-  const line = route.query.line ? parseInt(route.query.line, 10) : null;
-  const error = route.query.error;
-  
-  if (!xpath && !line) {
-    highlightLine.value = null;
-    errorMessage.value = null;
-    return;
-  }
-
-  if (baseAaDefinition && xpath) {
-    const baseAaAddress = getBaseAaAddress(definition);
-    if (baseAaAddress) {
-      const query = { xpath };
-      if (line) query.line = line;
-      if (error) query.error = error;
-      router.replace({
-        path: `/address/${baseAaAddress}`,
-        query
-      });
-      return;
-    }
-  }
-
-  if (!definition) {
-    highlightLine.value = null;
-    errorMessage.value = null;
-    return;
-  }
-
-  let calculatedLine;
-  if (xpath) {
-    calculatedLine = findCodeBlockLine(definition, xpath, line);
-  } else {
-    calculatedLine = line;
-  }
-  
-  highlightLine.value = calculatedLine;
-  errorMessage.value = error || null;
-
-  if (calculatedLine !== null) {
-    openDefinitionAndScroll();
-  }
-}
-
-function getBaseAaAddress(definition) {
-  if (!definition) return null;
-  try {
-    const parsed = JSON.parse(definition);
-    if (Array.isArray(parsed) && parsed[1]?.base_aa) {
-      return parsed[1].base_aa;
-    }
-  } catch {
-    return null;
-  }
-  return null;
-}
-
-function openDefinitionAndScroll() {
-  const tryOpen = () => {
-    if (definitionCollapse.value) {
-      definitionCollapse.value.setOpen(true);
-      setTimeout(() => {
-        scrollToHighlightedLine();
-      }, 1500);
-    } else {
-      setTimeout(tryOpen, 50);
-    }
-  };
-  tryOpen();
-}
-
-function scrollToHighlightedLine() {
-  const maxAttempts = 60;
-  const attemptDelay = 100;
-
-  const waitForHighlighted = async () => {
-    for (let i = 0; i < maxAttempts; i++) {
-      await nextTick();
-      const el = document.querySelector('.code-row.highlighted');
-      if (el) return el;
-      await new Promise((resolve) => setTimeout(resolve, attemptDelay));
-    }
-    return null;
-  };
-
-  const scrollToEl = (el, container) => {
-    const elRect = el.getBoundingClientRect();
-    const containerRect = container.getBoundingClientRect();
-    const target = elRect.top - containerRect.top + container.scrollTop - (container.clientHeight / 2) + (el.offsetHeight / 2);
-    container.scrollTo({ top: Math.max(0, target), behavior: 'smooth' });
-  };
-
-  const scroll = async () => {
-    const highlightedEl = await waitForHighlighted();
-    if (!highlightedEl) return;
-
-    const container = scrollContainer.value;
-    if (!container) return;
-
-    scrollToEl(highlightedEl, container);
-  };
-
-  if (document.hidden) {
-    const handleVisibilityChange = () => {
-      if (!document.hidden) {
-        document.removeEventListener('visibilitychange', handleVisibilityChange);
-        setTimeout(scroll, 100);
-      }
-    };
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-  } else {
-    scroll();
-  }
-}
-
-function handleLineClick(lineNum, event) {
-  const newQuery = { ...route.query };
-  
-  if (newQuery.error) {
-    delete newQuery.error;
-  }
-  
-  if (newQuery.xpath) {
-    delete newQuery.xpath;
-  }
-  
-  newQuery.line = String(lineNum);
-  
-  router.replace({ query: newQuery });
-  
-  highlightLine.value = lineNum;
-  errorMessage.value = null;
-}
-
-function nextPageHandler(data) {
-  if(!data) {
-    const err = `For next page in address: ${route.params.address}. Result:${data}`;
-    report(new Error(err));
-  }
-  nextPagesEnded.value = data.end;
-  lastRowids.value = {
-    lastInputsROWID: data.newLastInputsROWID,
-    lastOutputsROWID: data.newLastOutputsROWID,
-  };
-
-  PL.value.addNewTransactions(data.unitAssets, data.objTransactions);
-  isNewPageLoaded.value = true;
-}
-
-async function urlHandler() {
-  if (!route.params.address) return;
-
-  const params = prepareParamsForAddress(route);
-
-  if (route.query.asset) {
-    filter.value = route.query.asset;
-  }
-
-  isLoaded.value = false;
-  
-  const key = `address:${route.params.address}:${route.query.asset || 'null'}`;
-  const { data: result } = await useAsyncData(key, () => fetchAddressInfo(route.params.address, params));
-  
-  await addressInfoHandler(result.value);
 }
 
 async function getNextPage() {
-  if (nextPagesEnded.value) return;
-  const params = prepareParamsForAddress(route, lastRowids);
+  const list = PL.value;
+  if (!list || !isLoaded.value || isLoadingMore.value || nextPagesEnded.value) return;
 
-  isNewPageLoaded.value = false;
-  const result = await fetchAddressInfo(route.params.address, params);
-  if (result.notFound) return;
+  const { signal } = addressRequest;
+  const params = { ...pageCursor, asset: route.query.asset || undefined };
 
-  nextPageHandler(result);
+  nextPageError.value = false;
+  isLoadingMore.value = true;
+  try {
+    const result = await fetchAddressInfo(route.params.address, params, { nextPage: true, signal });
+    if (signal.aborted || PL.value !== list) return;
+    if (!result || result.error) throw new Error("Invalid address transaction page");
+    if (result.notFound) {
+      nextPagesEnded.value = true;
+      return;
+    }
+
+    list.addNewTransactions(result.unitAssets, result.objTransactions);
+    const nextCursor = {
+      lastInputsROWID: result.newLastInputsROWID,
+      lastOutputsROWID: result.newLastOutputsROWID,
+    };
+    nextPagesEnded.value = Boolean(result.end) || (
+      nextCursor.lastInputsROWID === pageCursor.lastInputsROWID &&
+      nextCursor.lastOutputsROWID === pageCursor.lastOutputsROWID
+    );
+    pageCursor = nextCursor;
+  } catch (err) {
+    if (!signal.aborted && PL.value === list) {
+      console.error(err);
+      nextPageError.value = true;
+    }
+  } finally {
+    await nextTick();
+    if (!signal.aborted && PL.value === list) {
+      isLoadingMore.value = false;
+    }
+  }
 }
 
-await urlHandler();
+await loadAddress(true);
 
-watch(() => [route.params.address, route.query.asset || "all"].join("_"), () => {
-  urlHandler();
-});
+watch([() => route.params.address, () => route.query.asset], () => loadAddress());
+
+const { height: containerHeight } = useElementSize(scrollContainer);
+const { height: contentHeight } = useElementSize(contentEl);
+const { y: scrollY } = useScroll(scrollContainer);
 
 watch(
-  () => shouldLoadMore(isLoaded.value, isNewPageLoaded.value, notFound.value),
-  (shouldLoad) => {
-    if (shouldLoad && !nextPagesEnded.value) {
+  [containerHeight, contentHeight, scrollY, PL, isLoadingMore],
+  () => {
+    if (nextPageError.value || isLoadingMore.value) return;
+    const container = scrollContainer.value;
+    if (container && container.scrollHeight - container.clientHeight - container.scrollTop <= 100) {
       getNextPage();
     }
-  }
-);
-
-watch(filter, () => {
-  if (filter.value !== route.query.asset) {
-    router.push({ query: { asset: filter.value } });
-  }
-});
-
-watch(rates, updatePieData);
-
-watch(
-  () => route.query.line,
-  (newLine) => {
-    if (newLine !== undefined && data.value?.definition) {
-      const lineNum = parseInt(newLine, 10);
-      if (!isNaN(lineNum) && lineNum !== highlightLine.value) {
-        highlightLine.value = lineNum;
-        if (!route.query.error) {
-          errorMessage.value = null;
-        }
-      }
-    }
-  }
+  },
+  { flush: "post" }
 );
 
 function back() {
-  if (lastUnit.value) {
-    return router.push({ path: "/" + lastUnit.value });
-  }
-
-  return router.push({ path: "/" });
+  return router.push({ path: lastUnit.value ? `/${prepareLink(lastUnit.value)}` : "/" });
 }
 </script>
 
@@ -360,10 +269,10 @@ function back() {
       <div v-if="!isLoaded" class="text-center">
         <Spinner class="w-20 h-20 inline-block" />
       </div>
-      <div v-if="notFound" class="mt-14 text-center">
+      <div v-else-if="notFound" class="mt-14 text-center">
         No transactions were found for this address
       </div>
-      <div v-else-if="isLoaded">
+      <div v-else>
         <div class="mt-10 font-bold flex items-center flex-wrap">
           <span>{{ data.address }}</span> <Clipboard class="h-5 ml-2" :text="data.address" />
         </div>
@@ -390,39 +299,25 @@ function back() {
             >View Autonomous Agent stats (TVL, turnover)
           </a>
         </div>
-        <div v-if="aaDescription" class="mt-1">
-          {{ aaDescription }}
-        </div>
-        <div v-if="aaHomepageUrl || aaSourceUrl" class="mt-1 text-sm space-x-2">
-          <a
-            v-if="aaHomepageUrl"
-            class="link link-hover text-blue-500"
-            :href="aaHomepageUrl"
-            target="_blank"
-            rel="noopener noreferrer"
-            >Home page</a
-          >
-          <a
-            v-if="aaSourceUrl"
-            class="link link-hover text-blue-500"
-            :href="aaSourceUrl"
-            target="_blank"
-            rel="noopener noreferrer"
-            >Source</a
-          >
-        </div>
+        <AADescription
+          v-if="definition || data.baseAaDefinition"
+          ref="aaDoc"
+          :address="data.address"
+          :definition="definition"
+          :base-aa-definition="data.baseAaDefinition"
+        />
         <div class="block lg:flex">
           <div class="flex-auto">
             <Collapse
               ref="definitionCollapse"
               class="pt-1.5"
-              v-if="data.definition"
+              v-if="definitionText"
               :title="t('labelDefinition')"
               :closed="true"
             >
               <Payload>
                 <OscriptHighlighter 
-                  :text="prettifyJson(JSON.parse(data.definition))" 
+                  :text="definitionText"
                   :highlight-line="highlightLine"
                   :error-message="errorMessage"
                   @line-click="handleLineClick"
@@ -437,7 +332,7 @@ function back() {
             >
               <StateVars :state-vars="data.objStateVars" :storage-size="data.storage_size" />
             </Collapse>
-            <collapse
+            <Collapse
               class="pt-1.5"
               v-if="data.arrAasFromTemplate"
               :title="t('labelAasFromTemplate')"
@@ -448,7 +343,7 @@ function back() {
                   <Link :type="'address'" :link="obj.address">{{ obj.address }}</Link>
                 </li>
               </ul>
-            </collapse>
+            </Collapse>
             <Collapse
               class="pt-1.5"
               v-if="data.arrAaResponses"
@@ -510,6 +405,11 @@ function back() {
             :address="data.address"
             :view="view"
         />
+        <div v-if="nextPageError" class="flex justify-center pb-6 pt-4">
+          <button type="button" class="link link-hover text-blue-500 py-2" @click="getNextPage">
+            {{ t("retryTransactions") }}
+          </button>
+        </div>
       </div>
     </div>
   </div>

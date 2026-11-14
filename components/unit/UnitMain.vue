@@ -149,7 +149,20 @@ function getLastUnits() {
   $socket.emit(EventNames.GetLastUnits, updDag);
 }
 
-$socket.on("update", getNew);
+let graphControlsActive = false;
+
+function activateGraphControls() {
+  if (graphControlsActive) return;
+  $socket.on("update", getNew);
+  window.addEventListener("keydown", keyDown);
+  graphControlsActive = true;
+}
+
+function deactivateGraphControls() {
+  $socket.off("update", getNew);
+  window.removeEventListener("keydown", keyDown);
+  graphControlsActive = false;
+}
 
 function keyDown(e) {
   if (searchInputFocused.value) return;
@@ -177,14 +190,13 @@ watch(
 );
 
 onMounted(() => {
-  window.addEventListener("keydown", keyDown);
   checkRouterAndUnitInfoFromStore();
+  activateGraphControls();
 });
 
-
-onUnmounted(() => {
-  window.removeEventListener("keydown", keyDown);
-});
+onActivated(activateGraphControls);
+onDeactivated(deactivateGraphControls);
+onUnmounted(deactivateGraphControls);
 </script>
 
 <template>

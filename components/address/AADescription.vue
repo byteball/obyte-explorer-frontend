@@ -1,34 +1,39 @@
 <script setup>
-import { computed } from "vue";
 import { useAaDescription } from "~/composables/useAaDescription";
 
 const props = defineProps({
-  definition: {
-    type: String,
-    default: '',
-  },
-  baseAaDefinition: {
-    type: String,
-    default: '',
-  },
+  address: String,
+  definition: [String, Array, Object],
+  baseAaDefinition: [String, Array, Object],
 });
 
 const { aaDescription, aaHomepageUrl, aaSourceUrl } = useAaDescription(
-  computed(() => props.definition),
-  computed(() => props.baseAaDefinition)
+  () => props.address,
+  () => props.definition,
+  () => props.baseAaDefinition
 );
+
+defineExpose({ aaDescription });
 </script>
 
 <template>
   <div v-if="aaDescription" class="mt-1">
     {{ aaDescription }}
   </div>
-  <div class="mt-1">
-    <div v-if="aaHomepageUrl" class="inline-block">
-      <NuxtLink class="link link-hover text-blue-500" :to="aaHomepageUrl" target="_blank"> Home page </NuxtLink>
-    </div>
-    <div v-if="aaSourceUrl" class="ml-2 inline-block">
-      <NuxtLink class="link link-hover text-blue-500" :to="aaSourceUrl" target="_blank"> Source </NuxtLink>
-    </div>
+  <div v-if="aaHomepageUrl || aaSourceUrl" class="mt-1 text-sm space-x-2">
+    <a
+      v-if="aaHomepageUrl"
+      class="link link-hover text-blue-500"
+      :href="aaHomepageUrl"
+      target="_blank"
+      rel="noopener noreferrer"
+    >Home page</a>
+    <a
+      v-if="aaSourceUrl"
+      class="link link-hover text-blue-500"
+      :href="aaSourceUrl"
+      target="_blank"
+      rel="noopener noreferrer"
+    >Source</a>
   </div>
 </template>

@@ -1,6 +1,8 @@
 <script setup>
+import { parseHttpUrl } from "~/helpers/httpUrl";
+
 const props = defineProps({
-  text: String,
+  text: { type: String, default: "" },
   highlightLine: {
     type: Number,
     default: null,
@@ -12,7 +14,6 @@ const props = defineProps({
 });
 
 const emit = defineEmits(['line-click']);
-const router = useRouter();
 
 const oscriptKeywords = new Set([
   "messages", "bounce_fees", "app", "payload", "asset", "outputs", "address",
@@ -45,10 +46,6 @@ const operators = new Set(["OR", "NOT", "AND", "OTHERWISE", "or", "and", "not", 
 
 const addressRegex = /^[A-Z0-9]{32}$/;
 
-function escapeHtml(str) {
-  return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-}
-
 function tokenize(text) {
   const tokens = [];
   const regex = /("(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'|`(?:[^`\\]|\\.)*`|\/\/.*$|\/\*[\s\S]*?\*\/|\$\w+(?:\.\w+)*|\b\w+\b|\d+(?:\.\d+)?(?:[eE][-+]?\d+)?|[{}[\]:,()]|\s+)/gm;
@@ -67,11 +64,7 @@ function tokenize(text) {
       const inner = value.slice(1, -1);
       if (addressRegex.test(inner)) {
         tokens.push({ type: "address-string", value, address: inner, quote: value[0] });
-      } else if (value.startsWith('"') && inner.startsWith("{") && inner.endsWith("}")) {
-        tokens.push({ type: "formula", value, inner: inner.slice(1, -1), quote: value[0] });
-      } else if (value.startsWith("`") && inner.startsWith("{") && inner.endsWith("}")) {
-        tokens.push({ type: "formula", value, inner: inner.slice(1, -1), quote: value[0] });
-      } else if (value.startsWith("'") && inner.startsWith("{") && inner.endsWith("}")) {
+      } else if (inner.startsWith("{") && inner.endsWith("}")) {
         tokens.push({ type: "formula", value, inner: inner.slice(1, -1), quote: value[0] });
       } else {
         tokens.push({ type: "string", value });
@@ -129,99 +122,49 @@ function tokenize(text) {
   return tokens;
 }
 
-function renderTokens(tokens) {
-  return tokens
-    .map((token) => {
-      const escaped = escapeHtml(token.value);
-      switch (token.type) {
-        case "comment":
-          return `<span class="os-comment">${escaped}</span>`;
-        case "string":
-          const inner = token.value.slice(1, -1);
-          if (inner.startsWith("http://") || inner.startsWith("https://")) {
-            return `<span class="os-string">${token.value[0]}<a href="${inner}" class="os-link" target="_blank" rel="noopener noreferrer">${escapeHtml(inner)}</a>${token.value[token.value.length - 1]}</span>`;
-          }
-          return `<span class="os-string">${escaped}</span>`;
-        case "json-key":
-          return `<span class="os-json-key">${escaped}</span>`;
-        case "address-string":
-          return `<span class="os-string">${token.quote}<a class="addr os-link" href="/address/${token.address}">${token.address}</a>${token.quote}</span>`;
-        case "formula":
-          return `<span class="os-formula-bracket">${token.quote}{</span>${renderFormula(token.inner)}<span class="os-formula-bracket">}${token.quote}</span>`;
-        case "variable":
-          return `<span class="os-variable">${escaped}</span>`;
-        case "number":
-          return `<span class="os-number">${escaped}</span>`;
-        case "boolean":
-          return `<span class="os-boolean">${escaped}</span>`;
-        case "keyword":
-          return `<span class="os-keyword">${escaped}</span>`;
-        case "function":
-          return `<span class="os-function">${escaped}</span>`;
-        case "operator":
-          return `<span class="os-operator">${escaped}</span>`;
-        case "address":
-          return `<a class="addr os-link" href="/address/${token.value}">${escaped}</a>`;
-        default:
-          return escaped;
-      }
-    })
-    .join("");
-}
-
-function renderFormula(text) {
-  const tokens = tokenize(text);
-  return renderTokens(tokens);
-}
-
-function getLeadingWhitespace(str) {
-  const match = str.match(/^(\s*)/);
-  return match ? match[1] : '';
-}
-
-function processLines(text) {
-  const lines = text.split("\n");
-  return lines.map((line, index) => {
-    const lineNum = index + 1;
-    const tokens = tokenize(line);
-    const highlighted = renderTokens(tokens);
-    const isHighlighted = props.highlightLine === lineNum;
-    
-    return {
-      lineNum,
-      content: highlighted || ' ',
-      isHighlighted,
-      hasError: isHighlighted && props.errorMessage,
-      errorIndent: isHighlighted && props.errorMessage ? getLeadingWhitespace(line) : '',
-    };
+function expandTokens(text) {
+  return tokenize(text).flatMap((token) => {
+    if (token.type === "formula") {
+      return [
+        { type: "formula-bracket", value: `${token.quote}{` },
+        ...expandTokens(token.inner),
+        { type: "formula-bracket", value: `}${token.quote}` },
+      ];
+    }
+    if (token.type === "string") {
+      const label = token.value.slice(1, -1);
+      const url = /^https?:\/\//i.test(label) && parseHttpUrl(label);
+      if (url) return { ...token, label, href: url.href };
+    }
+    if (token.type === "text" || token.type === "whitespace") {
+      return { type: "plain", value: token.value };
+    }
+    return token;
   });
 }
 
-const processedLines = computed(() => processLines(props.text));
-const lineNumberWidth = computed(() => {
-  const maxLine = processedLines.value.length;
-  return Math.max(2, String(maxLine).length);
-});
-
-function handleLineClick(lineNum, event) {
-  emit('line-click', lineNum, event);
-}
-
-function handleClick(event) {
-  const { target } = event;
-  if (target && target.tagName === "A" && target.className.includes("addr")) {
-    event.preventDefault();
-    router.push({ path: `/address/${target.innerText}` });
+function prepareTokens(text) {
+  const result = [];
+  for (const token of expandTokens(text)) {
+    const prev = result.at(-1);
+    if (token.type === "plain" && prev?.type === "plain") {
+      prev.value += token.value;
+    } else {
+      result.push(token);
+    }
   }
+  return result;
 }
 
-onBeforeMount(() => {
-  window.addEventListener("click", handleClick, true);
-});
+const processedLines = computed(() =>
+  props.text.split("\n").map((raw, index) => ({
+    lineNum: index + 1,
+    raw,
+    tokens: prepareTokens(raw),
+  }))
+);
 
-onBeforeUnmount(() => {
-  window.removeEventListener("click", handleClick, true);
-});
+const lineNumberWidth = computed(() => Math.max(2, String(processedLines.value.length).length));
 </script>
 
 <template>
@@ -229,31 +172,39 @@ onBeforeUnmount(() => {
     <table class="oscript-code">
       <tbody>
         <template v-for="line in processedLines" :key="line.lineNum">
-          <tr v-if="line.hasError" class="error-row">
+          <tr v-if="line.lineNum === highlightLine && errorMessage" class="error-row">
             <td class="line-gutter error-gutter"></td>
             <td class="error-message-line">
-              <span v-html="escapeHtml(line.errorIndent)"></span>Error: {{ errorMessage }}
+              <span>{{ line.raw.match(/^\s*/)[0] }}</span>Error: {{ errorMessage }}
             </td>
           </tr>
-          <tr 
-            class="code-row" 
-            :class="{ highlighted: line.isHighlighted }"
+          <tr
+            class="code-row"
+            :class="{ highlighted: line.lineNum === highlightLine }"
             :data-line="line.lineNum"
           >
-            <td 
-              class="line-gutter" 
-              :class="{ highlighted: line.isHighlighted }"
+            <td
+              class="line-gutter"
+              :class="{ highlighted: line.lineNum === highlightLine }"
               :style="{ width: lineNumberWidth + 'ch' }"
-              @click="handleLineClick(line.lineNum, $event)"
+              @click="emit('line-click', line.lineNum)"
               :title="`Line ${line.lineNum}`"
             >
               {{ line.lineNum }}
             </td>
-            <td 
-              class="line-content code-line" 
-              :class="{ highlighted: line.isHighlighted }"
-              v-html="line.content"
-            ></td>
+            <td class="line-content code-line" :class="{ highlighted: line.lineNum === highlightLine }">
+              <template v-for="(token, index) in line.tokens" :key="index">
+                <template v-if="token.type === 'plain'">{{ token.value }}</template>
+                <span v-else-if="token.type === 'address-string'" class="os-string">{{ token.quote }}<NuxtLink
+                  class="addr os-link" :to="`/address/${token.address}`" no-prefetch
+                >{{ token.address }}</NuxtLink>{{ token.quote }}</span>
+                <NuxtLink v-else-if="token.type === 'address'" class="addr os-link" :to="`/address/${token.value}`" no-prefetch>{{ token.value }}</NuxtLink>
+                <span v-else-if="token.href" class="os-string">{{ token.value[0] }}<a
+                  :href="token.href" class="os-link" target="_blank" rel="noopener noreferrer"
+                >{{ token.label }}</a>{{ token.value.at(-1) }}</span>
+                <span v-else :class="`os-${token.type}`">{{ token.value }}</span>
+              </template>
+            </td>
           </tr>
         </template>
       </tbody>
@@ -359,58 +310,58 @@ onBeforeUnmount(() => {
   white-space: pre-wrap;
 }
 
-:deep(.os-keyword) {
+.os-keyword {
   color: #cf222e;
   font-weight: bold;
 }
 
-:deep(.os-boolean) {
+.os-boolean {
   color: #0550ae;
   font-weight: bold;
 }
 
-:deep(.os-string) {
+.os-string {
   color: #2c6dcd;
 }
 
-:deep(.os-json-key) {
+.os-json-key {
   color: #0550ae;
   font-weight: normal;
 }
 
-:deep(.os-number) {
+.os-number {
   color: #0550ae;
 }
 
-:deep(.os-comment) {
+.os-comment {
   color: #6e7781;
   font-style: italic;
 }
 
-:deep(.os-variable) {
+.os-variable {
   color: #2a5589;
 }
 
-:deep(.os-function) {
+.os-function {
   color: #6639ba;
 }
 
-:deep(.os-operator) {
+.os-operator {
   color: #cf222e;
 }
 
-:deep(.os-formula-bracket) {
+.os-formula-bracket {
   color: #24292f;
   font-weight: bold;
 }
 
-:deep(.os-link) {
-  color: #3b82f6; 
+.os-link {
+  color: #3b82f6;
   text-decoration: none;
   cursor: pointer;
 }
 
-:deep(.os-link:hover) {
+.os-link:hover {
   color: #2563eb;
   text-decoration: underline;
 }

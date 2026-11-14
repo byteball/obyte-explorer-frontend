@@ -9,37 +9,32 @@ export function setMaxWidthNodes(x) {
 }
 
 export function fixConflicts(arr) {
-  const conflicts = {};
-  let a, b, l, l2;
-  for (a = 0, l = arr.length; a < l; a++) {
-    for (b = 0; b < l; b++) {
-      if (
-        a !== b &&
-        arr[a].position.x < arr[b].position.x + 10 &&
-        arr[a].position.x > arr[b].position.x - 10 &&
-        arr[a].position.y === arr[b].position.y
-      ) {
-        if (!conflicts[arr[a].position.y]) conflicts[arr[a].position.y] = [];
-        conflicts[arr[a].position.y].push(arr[a]);
+  const rows = new Map();
+  for (const node of arr) {
+    const { x, y } = node.position;
+    if (!Number.isFinite(x) || Number.isNaN(y)) continue;
+    if (!rows.has(y)) rows.set(y, []);
+    rows.get(y).push(node);
+  }
+
+  const conflictingNodes = new Set();
+  for (const row of rows.values()) {
+    row.sort((a, b) => a.position.x - b.position.x);
+    for (let i = 1; i < row.length; i++) {
+      if (row[i].position.x - row[i - 1].position.x < 10) {
+        conflictingNodes.add(row[i - 1]);
+        conflictingNodes.add(row[i]);
       }
     }
   }
-  for (const k in conflicts) {
-    let offset = 0;
-    const units = [];
-    for (b = 0, l2 = conflicts[k].length; b < l2; b++) {
-      for (a = 0; a < l; a++) {
-        if (arr[a].data.id === conflicts[k][b].data.id && units.indexOf(arr[a].data.id) === -1) {
-          units.push(arr[a].data.id);
-          if (arr[a].position.x < 0) {
-            offset -= 60;
-          } else {
-            offset += 60;
-          }
-          arr[a].position.x += offset;
-        }
-      }
-    }
+
+  const offsets = new Map();
+  for (const node of arr) {
+    if (!conflictingNodes.has(node)) continue;
+    const { position } = node;
+    const offset = (offsets.get(position.y) ?? 0) + (position.x < 0 ? -60 : 60);
+    offsets.set(position.y, offset);
+    position.x += offset;
   }
   return arr;
 }

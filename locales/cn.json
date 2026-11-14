@@ -22,6 +22,7 @@
 	"transactionsInAssets": "显示交易中的资产",
 	"unspent": "未用地址",
 	"transactions": "交易记录",
+	"retryTransactions": "重新加载交易记录",
 	"unitLegend": "单位图例",
 	"notMcNotStable": "不在主链上, 不稳定",
 	"mcNotStable": "在主链上, 不稳定",

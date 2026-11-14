@@ -22,6 +22,7 @@
 	"transactionsInAssets": "Vis transaktioner for valutaer",
 	"unspent": "Ej brugt",
 	"transactions": "Transaktioner",
+	"retryTransactions": "Prøv at indlæse transaktioner igen",
 	"unitLegend": "Unit panel",
 	"notMcNotStable": "ikke på main chain, ej bekræftet",
 	"mcNotStable": "main chain, ej bekræftet",

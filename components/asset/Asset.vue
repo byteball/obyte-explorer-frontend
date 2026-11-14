@@ -195,6 +195,7 @@ function back() {
           <div v-if="data.assetInfo.authorDefinition" class="mt-1">
             <ClientOnly>
               <AADescription
+                :address="data.assetInfo.author"
                 :definition="data.assetInfo.authorDefinition"
               />
             </ClientOnly>

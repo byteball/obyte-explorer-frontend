@@ -12,6 +12,7 @@ import { useAssetNamesStore } from "~/stores/assetNames.js";
 
 import ObyteLogo from "~/components/icons/ObyteLogo.vue";
 import { prepareLink } from "~/helpers/prepareLink.js";
+import { htmlEscape } from "~/helpers/text.js";
 
 const { t } = useI18n();
 const router = useRouter();
@@ -44,7 +45,7 @@ function search(value, raw) {
     return;
   }
 
-  router.push(`/asset/${value}`);
+  router.push(`/asset/${encodeURIComponent(value)}`);
 }
 
 function searchEventHandler() {
@@ -96,6 +97,13 @@ onMounted(() => {
     selector: "#searchInput",
     submit: true,
     placeHolder: t("searchUnitOrAddress"),
+    searchEngine: (query, name) => {
+      if (typeof name !== "string") return;
+      const index = name.toLowerCase().indexOf(query.toLowerCase());
+      if (index === -1) return;
+      const end = index + query.length;
+      return `${htmlEscape(name.slice(0, index))}<mark>${htmlEscape(name.slice(index, end))}</mark>${htmlEscape(name.slice(end))}`;
+    },
     data: {
       src: async () => {
         return assetNames.value;
@@ -117,9 +125,6 @@ onMounted(() => {
     },
     resultsList: {
       maxResults: 20
-    },
-    resultItem: {
-      highlight: true,
     },
     events: {
       input: {

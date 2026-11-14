@@ -7,6 +7,8 @@ import { TitleComponent, TooltipComponent, LegendComponent } from "echarts/compo
 import VChart from "vue-echarts";
 
 import { format } from "~/helpers/amount";
+import { prepareLink } from "~/helpers/prepareLink";
+import { htmlEscape } from "~/helpers/text";
 
 use([CanvasRenderer, PieChart, TitleComponent, TooltipComponent, LegendComponent]);
 
@@ -14,13 +16,12 @@ const router = useRouter();
 
 const props = defineProps(["name", "data"]);
 
-const option = ref({
+const option = computed(() => ({
   tooltip: {
     trigger: "item",
     position: "top",
-    formatter: function (params) {
-      return `${params.data.name} - $${format(params.data.value)} (${params.percent}%)`;
-    },
+    formatter: (params) =>
+      htmlEscape(`${params.data.name} - $${format(params.data.value)} (${params.percent}%)`),
   },
   series: [
     {
@@ -47,13 +48,13 @@ const option = ref({
       },
     },
   ],
-});
+}));
 
 function click(params) {
   const { name, event } = params;
   if (event.target.type !== "tspan") return;
 
-  router.push(`/asset/${name}`);
+  router.push(`/asset/${prepareLink(name)}`);
 }
 </script>
 

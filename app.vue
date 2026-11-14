@@ -6,6 +6,12 @@ import { prepareLink } from "~/helpers/prepareLink.js";
 
 const router = useRouter();
 
+useHead(() => ({
+  bodyAttrs: {
+    class: router.currentRoute.value.name === "unit" ? "overscroll-none overflow-hidden" : "",
+  },
+}));
+
 function checkHashAndRedirect() {
   if (location.hash && location.hash !== "#") {
     const hash = location.hash;
@@ -13,7 +19,7 @@ function checkHashAndRedirect() {
     const value = hashSplit[0].replace(/%20/g, " ").substring(1);
     
     if (value.startsWith("/asset")) {
-      router.push(`/asset/${value.substring(7)}`);
+      router.push(`/asset/${prepareLink(value.substring(7))}`);
       return;
     }
 

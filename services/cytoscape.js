@@ -1,6 +1,10 @@
+import dagre from "dagre";
 import { styles } from "../configs/cytoscape";
 import { setMaxWidthNodes, fixConflicts } from "../helpers/dag";
 import { EventNames } from "../enum/eventEnums";
+
+const { Graph } = dagre.graphlib;
+const { layout } = dagre;
 
 let _cy,
   nodes,
@@ -35,6 +39,8 @@ let emitHandler = (name, data) => {
 let clickHandler = (unit) => {
   //
 };
+
+let resizeObserver;
 
 export function setEmitHandler(fn) {
   emitHandler = fn;
@@ -78,17 +84,22 @@ export function setCurrentUnit(unit) {
   highlightNode(unit);
 }
 
-const scroll = document.getElementById("scroll");
+function getScrollEl() {
+  return document.getElementById("scroll");
+}
 
-window.addEventListener("resize", function () {
-  if (!scroll) return;
-  if (_cy) scroll.scrollTop = convertPosPanToPosScroll();
-});
+function syncScrollTop() {
+  const scroll = getScrollEl();
+  if (scroll && _cy) scroll.scrollTop = convertPosPanToPosScroll();
+}
+
+window.addEventListener("resize", syncScrollTop);
 
 function convertPosPanToPosScroll(posY, topPos) {
+  const scroll = getScrollEl();
+  if (!scroll) return;
   if (!posY) posY = _cy.pan("y");
   if (topPos === undefined) topPos = scrollTopPos;
-  if (!scroll) return;
   return scroll.offsetHeight / 2 - topPos - posY;
 }
 
@@ -103,16 +114,15 @@ function updListNotStableUnit() {
 }
 
 function updateScrollHeight() {
+  const scroll = getScrollEl();
+  const scrollBody = document.getElementById("scrollBody");
+  if (!scroll || !scrollBody) return;
   const unitTopPos = _cy.getCenterPan(_cy.getElementById(nodes[0].data.unit)).y;
   const unitLowPos = _cy.getCenterPan(_cy.getElementById(nodes[nodes.length - 1].data.unit)).y;
   scrollTopPos = convertPosPanToPosScroll(unitTopPos, 0);
-  if(!document.getElementById("scrollBody")) return;
-  if(!scroll) return;
-  document.getElementById("scrollBody").style.height =
+  scrollBody.style.height =
     convertPosPanToPosScroll(unitLowPos - unitTopPos, 0) + scroll.offsetHeight / 2;
-  setTimeout(function () {
-    scroll.scrollTop = convertPosPanToPosScroll();
-  }, 1);
+  setTimeout(syncScrollTop, 1);
 }
 
 function createEdges() {
@@ -176,7 +186,7 @@ function createEdges() {
 }
 
 function createGraph(_nodes, _edges) {
-  const graph = new window.dagre.graphlib.Graph({
+  const graph = new Graph({
     multigraph: true,
     compound: true,
   });
@@ -199,7 +209,7 @@ function createGraph(_nodes, _edges) {
       graph.setEdge(_edges[k].data.source, _edges[k].data.target);
     }
   }
-  window.dagre.layout(graph);
+  layout(graph);
   return graph;
 }
 
@@ -309,10 +319,8 @@ function cyPan() {
   ) {
     getPrev();
   }
-  
-  if (!scroll) return;
-  
-  scroll.scrollTop = convertPosPanToPosScroll();
+
+  syncScrollTop();
 }
 
 function cyWheel(event) {
@@ -323,23 +331,24 @@ function cyWheel(event) {
   } else if (deltaY > 0) {
     scrollDown();
   }
-  
-  if (!scroll) return;
-  
-  scroll.scrollTop = convertPosPanToPosScroll();
+
+  syncScrollTop();
 }
 
 function createCy() {
+  resizeObserver?.disconnect();
   if (_cy) {
     _cy.off("mouseover", "node", cyMouseOver);
     _cy.off("mouseout", "node", cyMouseOut);
     _cy.off("click", "node", cyClick);
     _cy.off("tap", "node", cyTap);
     _cy.off("pan", cyPan);
-    _cy.container().removeEventListener("wheel", cyWheel);
+    _cy.container()?.removeEventListener("wheel", cyWheel);
+    _cy.destroy();
   }
+  const container = document.getElementById("cy");
   _cy = window.cytoscape({
-    container: document.getElementById("cy"),
+    container,
     boxSelectionEnabled: false,
     autounselectify: true,
     hideEdgesOnViewport: false,
@@ -358,6 +367,20 @@ function createCy() {
   _cy.on("tap", "node", cyTap);
   _cy.on("pan", cyPan);
   _cy.container().addEventListener("wheel", cyWheel);
+
+  let needsCenter = !container.clientWidth || !container.clientHeight;
+  const cy = _cy;
+  resizeObserver = new ResizeObserver(() => {
+    if (cy !== _cy || !container.clientWidth || !container.clientHeight) return;
+    cy.resize();
+    if (needsCenter) {
+      needsCenter = false;
+      const node = activeNode ? cy.getElementById(activeNode) : cy.nodes().first();
+      if (node.length) cy.center(node);
+    }
+    if (isInit) updateScrollHeight();
+  });
+  resizeObserver.observe(container);
 }
 
 function setChangesStableUnits(arrStableUnits) {

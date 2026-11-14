@@ -1,5 +1,5 @@
 export function htmlEscape(str) {
-  return str
+  return String(str)
     .replace(/&/g, "&amp;")
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#39;")
@@ -12,7 +12,11 @@ export function safePrettifyJson(json_object) {
 }
 
 export function prettifyJson(json_object) {
-  return JSON.stringify(json_object, null, "  ")
+  return formatJsonForDisplay(JSON.stringify(json_object, null, "  "));
+}
+
+export function formatJsonForDisplay(json) {
+  return json
     .replace(/\\n/g, "\n")
     .replace(/\\t/g, "  ")
     .replace(/\\"/g, '"')

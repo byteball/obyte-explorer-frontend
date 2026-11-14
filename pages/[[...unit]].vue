@@ -44,18 +44,12 @@ if (unitFromRoute.value) {
   infoStore.setReady(true);
   infoStore.setLoading(false);
 }
-
-onMounted(() => {
-  document.body.classList.add("overscroll-none", "overflow-hidden");
-});
-
-onUnmounted(() => {
-  document.body.classList.remove("overscroll-none", "overflow-hidden");
-});
 </script>
 
 <template>
-  <div id="cy" class="right-0 xl:right-[34%] overscroll-none"></div>
+  <div class="contents">
+    <div id="cy" class="right-0 xl:right-[34%] overscroll-none"></div>
+  </div>
   <div id="scroll" class="right-0 xl:right-[34%] overscroll-none">
     <div id="scrollBody">&nbsp;</div>
   </div>

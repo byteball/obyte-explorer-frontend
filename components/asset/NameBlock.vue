@@ -1,7 +1,9 @@
 <script setup>
 import Link from "../elements/Link.vue";
+import { parseHttpUrl } from "~/helpers/httpUrl";
 
-defineProps(["assetUnit", "name", "url", "urlName"]);
+const props = defineProps(["assetUnit", "name", "url", "urlName"]);
+const externalUrl = computed(() => parseHttpUrl(props.url)?.href);
 
 const { t } = useI18n();
 </script>
@@ -10,9 +12,9 @@ const { t } = useI18n();
   <div v-if="assetUnit === 'bytes'"><span class="font-bold">Bytes</span> - native asset</div>
   <div v-else-if="name">
     <span class="font-bold">{{ name }}</span>
-    <span v-if="url">
+    <span v-if="externalUrl">
       - view on
-      <a :href="url" target="_blank" class="link link-hover text-blue-500">{{ urlName }}</a> and
+      <a :href="externalUrl" target="_blank" rel="noopener noreferrer" class="link link-hover text-blue-500">{{ urlName }}</a> and
       <Link :type="'unit'" :link="assetUnit">{{ t("labelDefinition").toLowerCase() }}</Link>
     </span>
     <span v-else>

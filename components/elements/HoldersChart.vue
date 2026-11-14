@@ -8,6 +8,7 @@ import { useWindowSize } from "@vueuse/core";
 import VChart from "vue-echarts";
 
 import { format } from "~/helpers/amount";
+import { htmlEscape } from "~/helpers/text";
 
 use([CanvasRenderer, PieChart, TitleComponent, TooltipComponent, LegendComponent]);
 
@@ -23,11 +24,8 @@ const option = ref({
   tooltip: {
     trigger: "item",
     position: "top",
-    formatter: function (params) {
-      return `${params.data.name}<br/>${format(params.data.value)} ${props.symbol} (${
-        params.percent
-      }%)`;
-    },
+    formatter: (params) =>
+      `${htmlEscape(params.data.name)}<br/>${htmlEscape(`${format(params.data.value)} ${props.symbol} (${params.percent}%)`)}`,
   },
   series: [
     {

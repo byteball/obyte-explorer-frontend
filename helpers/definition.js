@@ -1,97 +1,51 @@
-import { prettifyJson } from './text';
+import { formatJsonForDisplay } from "./text.js";
 
 export function findCodeBlockLine(definition, xpath, relativeLine) {
-  if (!definition || !xpath) return null;
+  if (!definition || typeof xpath !== "string" || !xpath || xpath.length > 4096) return null;
 
-  let parsed;
+  const path = xpath.split("/").filter(Boolean);
+  if (!path.length) return relativeLine;
+  if (path.length > 64) return null;
+
   try {
-    parsed = typeof definition === 'string' ? JSON.parse(definition) : definition;
+    const parsed = typeof definition === "string" ? JSON.parse(definition) : definition;
+    const lines = JSON.stringify(parsed, null, "  ").split("\n");
+
+    if (Array.isArray(parsed)) path.unshift("1");
+    let value = parsed;
+    let line = 0;
+    for (let depth = 0; depth < path.length; depth++) {
+      const key = path[depth];
+      const isArray = Array.isArray(value);
+      if (!value || typeof value !== "object" || !Object.hasOwn(value, key)) return null;
+      if (isArray && !/^(0|[1-9]\d*)$/.test(key)) return null;
+
+      line = findChildLine(lines, line, depth, key, isArray);
+      if (line === -1) return null;
+      value = value[key];
+    }
+
+    const precedingLines = formatJsonForDisplay(lines.slice(0, line).join("\n")).split("\n").length;
+    return (line ? precedingLines : 0) + (relativeLine || 1);
   } catch {
     return null;
   }
+}
 
-  const prettified = prettifyJson(parsed);
-  const lines = prettified.split('\n');
-  
-  const pathParts = xpath.split('/').filter(Boolean);
-  if (pathParts.length === 0) return relativeLine;
+function findChildLine(lines, parentLine, depth, key, isArray) {
+  const indent = "  ".repeat(depth + 1);
+  const property = isArray ? null : `${JSON.stringify(key)}: `;
+  const targetIndex = isArray ? Number(key) : -1;
+  let index = 0;
 
-  let searchFromLine = 0;
-  let searchToLine = lines.length;
-
-  for (let i = 0; i < pathParts.length; i++) {
-    const part = pathParts[i];
-    const numericIndex = parseInt(part, 10);
-    const isIndex = !isNaN(numericIndex);
-    
-    if (isIndex) {
-      let itemCount = 0;
-      let depth = 0;
-      let foundStart = false;
-      let found = false;
-      let itemStartLine = searchFromLine;
-      let itemEndLine = searchToLine;
-      
-      for (let lineIdx = searchFromLine; lineIdx < searchToLine && !found; lineIdx++) {
-        const line = lines[lineIdx];
-        
-        for (let charIdx = 0; charIdx < line.length; charIdx++) {
-          const char = line[charIdx];
-          
-          if (char === '[' || char === '{') {
-            if (!foundStart && char === '[') {
-              foundStart = true;
-              depth = 0;
-            } else if (foundStart) {
-              if (depth === 0 && char === '{') {
-                if (itemCount === numericIndex) {
-                  itemStartLine = lineIdx;
-                }
-              }
-              depth++;
-            }
-          } else if ((char === ']' || char === '}') && foundStart) {
-            if (depth === 0 && char === ']') {
-              foundStart = false;
-            } else {
-              depth--;
-              if (depth === 0 && char === '}') {
-                if (itemCount === numericIndex) {
-                  itemEndLine = lineIdx;
-                  searchFromLine = itemStartLine;
-                  searchToLine = itemEndLine;
-                  found = true;
-                  break;
-                }
-                itemCount++;
-              }
-            }
-          }
-        }
-      }
-    } else {
-      const keyPattern = new RegExp(`"${part}"\\s*:`);
-      let foundKey = false;
-      
-      for (let lineIdx = searchFromLine; lineIdx < searchToLine; lineIdx++) {
-        const line = lines[lineIdx];
-        
-        if (keyPattern.test(line)) {
-          searchFromLine = lineIdx;
-          foundKey = true;
-          break;
-        }
-      }
-      
-      if (!foundKey) return null;
-    }
+  for (let line = parentLine + 1; line < lines.length; line++) {
+    const text = lines[line];
+    if (!text.startsWith(indent)) break;
+    const entry = text.slice(indent.length);
+    if (entry.startsWith(" ") || entry.startsWith("]") || entry.startsWith("}")) continue;
+    if (isArray ? index++ === targetIndex : entry.startsWith(property)) return line;
   }
-
-  if (relativeLine) {
-    return searchFromLine + relativeLine;
-  }
-  
-  return searchFromLine + 1;
+  return -1;
 }
 
 export function getAddressForTrace(trace, currentIndex) {

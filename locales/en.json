@@ -27,6 +27,7 @@
 	"transactionsInAssets": "Show transactions in assets",
 	"unspent": "Unspent outputs",
 	"transactions": "Transactions",
+	"retryTransactions": "Retry loading transactions",
 	"unitLegend": "Unit Legend",
 	"notMcNotStable": "not on main chain, not stable",
 	"mcNotStable": "main chain, not stable",

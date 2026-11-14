@@ -1,49 +1,60 @@
-import { ref, watch } from "vue";
+import { computed, onMounted, shallowRef, toValue, watch } from "vue";
+import { parseHttpUrl } from "../helpers/httpUrl.js";
 
-export function useAaDescription(definitionRef, baseDefinitionRef) {
-  const aaDescription = ref("");
-  const aaHomepageUrl = ref("");
-  const aaSourceUrl = ref("");
+const AA_ADDRESS_RE = /^[A-Z2-7]{32}$/;
 
-  const fetchAaDescription = async () => {
-    const definition = definitionRef?.value;
-    if (!definition) return;
+function extractDocUrl(def) {
+  if (!def) return null;
+  const parsed = typeof def === "string" ? JSON.parse(def) : def;
+  return typeof parsed?.[1]?.doc_url === "string" ? parsed[1].doc_url : null;
+}
 
-    try {
-      const parsedDefinition = JSON.parse(definition);
-      let docUrl = parsedDefinition[1]?.doc_url;
+async function loadAaDescription(address, definition, baseDefinition, signal) {
+  if (!definition && !baseDefinition) return null;
 
-      if (!docUrl && baseDefinitionRef?.value) {
-        const baseParsed = JSON.parse(baseDefinitionRef.value);
-        docUrl = baseParsed[1]?.doc_url;
-      }
+  try {
+    let docUrl = extractDocUrl(definition) || extractDocUrl(baseDefinition);
+    if (!docUrl) return null;
 
-      if (docUrl) {
-        const aaDoc = await $fetch(docUrl);
-        if (aaDoc?.description) {
-          aaDescription.value = aaDoc.description;
-        }
-        aaHomepageUrl.value = aaDoc?.homepage_url || "";
-        aaSourceUrl.value = aaDoc?.source_url || "";
-      } else {
-        aaHomepageUrl.value = "";
-        aaSourceUrl.value = "";
-      }
-    } catch {
-      //
+    if (docUrl.includes("{{aa_address}}")) {
+      if (typeof address !== "string" || !AA_ADDRESS_RE.test(address)) return null;
+      docUrl = docUrl.replaceAll("{{aa_address}}", address);
     }
-  };
 
-  watch(
-    () => [definitionRef?.value, baseDefinitionRef?.value],
-    () => fetchAaDescription(),
-    { immediate: true }
-  );
+    const url = parseHttpUrl(docUrl);
+    if (!url) return null;
+
+    return await $fetch("/aa-documentation", {
+      method: "POST",
+      query: { url: url.href },
+      retry: 0,
+      signal,
+    });
+  } catch {
+    return null;
+  }
+}
+
+export function useAaDescription(address, definition, baseDefinition) {
+  const doc = shallowRef(null);
+
+  onMounted(() => {
+    watch(
+      () => [toValue(address), toValue(definition), toValue(baseDefinition)],
+      async ([addr, def, baseDef], _, onCleanup) => {
+        const controller = new AbortController();
+        onCleanup(() => controller.abort());
+        doc.value = null;
+        const result = await loadAaDescription(addr, def, baseDef, controller.signal);
+        if (!controller.signal.aborted) doc.value = result;
+      },
+      { immediate: true }
+    );
+  });
 
   return {
-    aaDescription,
-    aaHomepageUrl,
-    aaSourceUrl,
-    fetchAaDescription,
+    aaDescription: computed(() => doc.value?.description || ""),
+    aaHomepageUrl: computed(() => doc.value?.homepage_url || ""),
+    aaSourceUrl: computed(() => doc.value?.source_url || ""),
   };
 }
